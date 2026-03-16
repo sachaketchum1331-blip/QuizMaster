@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizMaster — Étudiant</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d1a;--surface:#16162a;--card:#1e1e38;--a1:#ff6b35;--a2:#f7c948;--a3:#4ecdc4;--a4:#a78bfa;--text:#f0f0ff;--muted:#8888aa;--green:#22d3a5;--red:#ff4d6d;--border:rgba(255,255,255,0.08);--r:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(255,107,53,.12) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 80% 80%,rgba(78,205,196,.1) 0%,transparent 60%);pointer-events:none;z-index:0}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);position:relative;z-index:10}
+.logo{font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:2px;color:var(--a2)}.logo span{color:var(--a1)}
+.badge{background:var(--a4);color:#fff;font-weight:900;font-size:.75rem;padding:4px 12px;border-radius:99px}
+main{flex:1;position:relative;z-index:1;padding:24px;max-width:600px;margin:0 auto;width:100%}
+.sec{display:none}.sec.on{display:flex;flex-direction:column}
+h1{font-family:'Bangers',cursive;font-size:2.5rem;letter-spacing:2px;margin-bottom:8px}
+h2{font-family:'Bangers',cursive;font-size:1.8rem;color:var(--a2);margin-bottom:16px}
+.sub{color:var(--muted);font-size:.95rem;margin-bottom:28px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px}
+lbl{display:block;font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px}
+inp{display:block;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:1.1rem;padding:14px 18px;outline:none;transition:border .2s}
+inp:focus{border-color:var(--a1)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.2rem;border:none;border-radius:12px;padding:16px;cursor:pointer;transition:transform .15s;width:100%;letter-spacing:.5px}
+.btn:hover:not(:disabled){transform:translateY(-2px)}.btn:active{transform:translateY(0)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.bp{background:var(--a1);color:#fff;box-shadow:0 4px 24px rgba(255,107,53,.4)}
+.wa{display:flex;justify-content:center;gap:10px;margin:32px 0}
+.dot{width:16px;height:16px;border-radius:50%;animation:bn 1.2s infinite}
+.dot:nth-child(1){background:var(--a1);animation-delay:0s}.dot:nth-child(2){background:var(--a2);animation-delay:.2s}.dot:nth-child(3){background:var(--a3);animation-delay:.4s}.dot:nth-child(4){background:var(--a4);animation-delay:.6s}
+@keyframes bn{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-16px)}}
+.pinfo{text-align:center;margin:24px 0}
+.pav{font-size:4rem;margin-bottom:8px}.pnm{font-family:'Bangers',cursive;font-size:2rem;color:var(--a2)}.pci{color:var(--muted);font-size:.9rem;margin-top:8px}
+.qi{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.qnb{background:var(--a1);color:#fff;font-family:'Bangers',cursive;font-size:1.2rem;padding:4px 14px;border-radius:99px}
+.td{font-family:'Bangers',cursive;font-size:2.5rem}.td.urg{color:var(--red);animation:pls .5s infinite}
+@keyframes pls{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.qtxt{font-size:1.5rem;font-weight:900;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px;line-height:1.4}
+.abg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ab{border:none;border-radius:var(--r);padding:22px 16px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem;cursor:pointer;transition:transform .15s,opacity .3s,box-shadow .15s;display:flex;align-items:center;gap:12px;text-align:left;color:#fff}
+.ab:hover:not(:disabled){transform:scale(1.04);box-shadow:0 8px 32px rgba(0,0,0,.4)}.ab:active:not(:disabled){transform:scale(.98)}.ab:disabled{cursor:not-allowed}
+.ab.sel{transform:scale(1.06);box-shadow:0 0 0 4px #fff}.ab.correct{box-shadow:0 0 0 4px var(--green),0 0 30px rgba(34,211,165,.6)}.ab.wsel{opacity:.5}.ab.woth{opacity:.25}
+.ab.a{background:var(--red)}.ab.b{background:#3b82f6}.ab.c{background:var(--green);color:#000}.ab.d{background:var(--a2);color:#000}
+.fb{text-align:center;padding:32px;border-radius:var(--r);margin-bottom:24px;animation:pi .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pi{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.fb.good{background:linear-gradient(135deg,#134e2a,#1a6b38);border:2px solid var(--green)}
+.fb.bad{background:linear-gradient(135deg,#4a1020,#6b1530);border:2px solid var(--red)}
+.fbe{font-size:4rem;margin-bottom:12px}.fbt{font-family:'Bangers',cursive;font-size:2.5rem;margin-bottom:8px}.fbp{font-size:1.5rem;font-weight:900;color:var(--a2)}.fbtot{color:var(--muted);font-size:.9rem;margin-top:6px}
+.rnk{text-align:center;margin:24px 0}.rn{font-family:'Bangers',cursive;font-size:5rem;color:var(--a2)}.rl{color:var(--muted);font-size:.9rem;margin-top:-8px}
+.scd{font-family:'Bangers',cursive;font-size:3rem;color:var(--a1);text-align:center}
+.mlb{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.mr{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px}
+.mr.me{border-color:var(--a2);background:rgba(247,201,72,.08)}
+.mrk{font-family:'Bangers',cursive;font-size:1.4rem;color:var(--muted);width:28px}.mrn{flex:1;font-weight:700;font-size:.95rem}.msc{font-family:'Bangers',cursive;font-size:1.2rem;color:var(--a2)}
+.tr{font-size:6rem;text-align:center;margin:24px 0;animation:tf 2s ease-in-out infinite}
+@keyframes tf{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.cc{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden}
+.cp{position:absolute;opacity:0;animation:cf linear forwards}
+@keyframes cf{0%{opacity:1;transform:translateY(-20px) rotate(0)}100%{opacity:0;transform:translateY(110vh) rotate(720deg)}}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 24px;font-weight:700;z-index:9999;animation:ti .3s ease;box-shadow:0 4px 24px rgba(0,0,0,.4);white-space:nowrap}
+@keyframes ti{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.rgpd{font-size:.75rem;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-top:16px;text-align:center}.rgpd span{color:var(--a3)}
+@media(max-width:480px){.abg{grid-template-columns:1fr}.ab{font-size:1rem;padding:18px 14px}h1{font-size:2rem}}
+</style>
+</head>
+<body>
+<div class="cc" id="cc"></div>
+<header>
+  <div class="logo">Quiz<span>Master</span> 🎯</div>
+  <div class="badge">ÉTUDIANT</div>
+</header>
+<main>
+
+<div class="sec on" id="sJ">
+  <h1>🎮 Rejoindre</h1>
+  <p class="sub">Entrez le code donné par votre professeur</p>
+  <div class="card">
+    <lbl>Code de session</lbl>
+    <inp id="codeIn" placeholder="Ex : 482916" maxlength="6" inputmode="numeric" style="font-size:2rem;text-align:center;letter-spacing:8px;font-family:'Bangers',cursive" oninput="this.value=this.value.replace(/\D/g,'')"></inp>
+  </div>
+  <div class="card">
+    <lbl>Votre pseudo</lbl>
+    <inp id="nameIn" placeholder="Prénom ou pseudo" maxlength="24"></inp>
+  </div>
+  <button class="btn bp" onclick="join()">🚀 Rejoindre le quiz !</button>
+  <div class="rgpd">🔒 <span>RGPD</span> — Votre pseudo n'est pas stocké après la session.</div>
+</div>
+
+<div class="sec" id="sW">
+  <div class="pinfo">
+    <div class="pav" id="myAv">🎯</div>
+    <div class="pnm" id="myNm">Joueur</div>
+    <div class="pci" id="pCi">En attente…</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:.9rem;color:var(--muted);margin-bottom:4px">Code de session</div>
+    <div style="font-family:'Bangers',cursive;font-size:3rem;color:var(--a2);letter-spacing:6px" id="myCode">——</div>
+    <div style="font-size:.85rem;color:var(--muted);margin-top:4px">Partagez ce code avec vos camarades !</div>
+  </div>
+  <div class="wa"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <p style="text-align:center;color:var(--muted)">En attente du professeur…</p>
+</div>
+
+<div class="sec" id="sQ">
+  <div class="qi">
+    <div class="qnb">Q <span id="qNm">1</span>/<span id="qTt">?</span></div>
+    <div class="td" id="tDsp">⏱ —</div>
+  </div>
+  <div class="qtxt" id="qTxt">Chargement…</div>
+  <div class="abg" id="aBtns"></div>
+</div>
+
+<div class="sec" id="sF">
+  <div class="fb" id="fbBox">
+    <div class="fbe" id="fbE">🎯</div>
+    <div class="fbt" id="fbT">—</div>
+    <div class="fbp" id="fbP">—</div>
+    <div class="fbtot" id="fbTot">—</div>
+  </div>
+  <p style="text-align:center;color:var(--muted);font-size:.9rem">En attente du classement…</p>
+  <div class="wa" style="margin:16px 0"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+</div>
+
+<div class="sec" id="sLB">
+  <h2>🏆 Classement</h2>
+  <div class="rnk"><div class="rn" id="myRnk">—</div><div class="rl">Votre classement</div></div>
+  <div class="scd" id="mySc">0 pts</div>
+  <div class="mlb" id="miniLb"></div>
+  <p style="text-align:center;color:var(--muted);font-size:.9rem;margin-top:20px">En attente de la prochaine question…</p>
+</div>
+
+<div class="sec" id="sFin">
+  <h1 style="text-align:center">🎉 Terminé !</h1>
+  <div class="tr" id="trophy">🏆</div>
+  <div class="rnk"><div class="rn" id="finRnk">—</div><div class="rl">Classement final</div></div>
+  <div class="scd" id="finSc">0 pts</div>
+  <div class="mlb" id="finLb"></div>
+</div>
+
+</main>
+
+<script type="module">
+import{initializeApp,getApps}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getDatabase,ref,set,update,remove,onValue}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+let db,myName='',myIcon='',code='',myScore=0,myAns=-1,tmInt=null,tLeft=0,cqTime=20,cq=null;
+const ICONS=['🔥','⚡','🎯','🚀','💎','👑','🦄','🎸','🌟','🦊','🐉','🎪','🎭','🏹'];
+
+window.addEventListener('DOMContentLoaded',()=>{const p=new URLSearchParams(location.search);if(p.get('code'))document.getElementById('codeIn').value=p.get('code');});
+
+window.join=async()=>{
+  code=document.getElementById('codeIn').value.trim();
+  myName=document.getElementById('nameIn').value.trim();
+  if(!code||code.length<4){toast('⚠️ Code invalide !');return;}
+  if(!myName){toast('⚠️ Entrez votre pseudo !');return;}
+  // Get Firebase URL from session
+  const su=localStorage.getItem('qm_url');
+  if(!su){
+    // Try to get from URL param or prompt
+    const fp=new URLSearchParams(location.search).get('fb');
+    if(!fp){toast('⚠️ Partagez aussi le fichier étudiant avec l\'URL Firebase !');return;}
+    localStorage.setItem('qm_url',fp);
+  }
+  const url=localStorage.getItem('qm_url');
+  try{
+    const a=getApps().find(x=>x.name==='qms')||initializeApp({databaseURL:url},'qms');
+    db=getDatabase(a);
+  }catch(e){toast('Erreur connexion Firebase');return;}
+
+  myIcon=ICONS[Math.floor(Math.random()*ICONS.length)];myScore=0;myAns=-1;
+  // Register player
+  await set(ref(db,'sessions/'+code+'/players/'+myName),{icon:myIcon,score:0,answers:[]});
+  document.getElementById('myAv').textContent=myIcon;
+  document.getElementById('myNm').textContent=myName;
+  document.getElementById('myCode').textContent=code;
+  go('sW');
+  // Listen to session state
+  onValue(ref(db,'sessions/'+code),snap=>{
+    const d=snap.val();if(!d)return;
+    if(d.players&&d.players[myName])document.getElementById('pCi').textContent=Object.keys(d.players).length+' participant(s) connecté(s)';
+    if(d.phase==='question'&&d.cq)showQ(d.cq);
+    if(d.phase==='timeout'){}
+    if(d.phase==='reveal'&&d.ca!==undefined)revealLocal(d.ca);
+    if(d.phase==='leaderboard'&&d.lb)showLB(d.lb,false);
+    if(d.phase==='finished'&&d.lb)showLB(d.lb,true);
+  });
+};
+
+function showQ(q){
+  if(cq&&cq.index===q.index&&document.getElementById('sQ').classList.contains('on'))return;
+  cq=q;myAns=-1;tLeft=q.time;cqTime=q.time;
+  document.getElementById('qNm').textContent=q.index+1;document.getElementById('qTt').textContent=q.total;
+  document.getElementById('qTxt').textContent=q.text;
+  const tc=['a','b','c','d'],ti=['▲','●','◆','⬟'];
+  document.getElementById('aBtns').innerHTML=q.answers.map((a,i)=>`<button class="ab ${tc[i]}" onclick="selAns(${i})" id="ab${i}"><span style="font-size:1.5rem">${ti[i]}</span><span>${a}</span></button>`).join('');
+  clearInterval(tmInt);updTm();
+  tmInt=setInterval(()=>{tLeft--;updTm();if(tLeft<=0)clearInterval(tmInt);},1000);
+  go('sQ');
+}
+function updTm(){const e=document.getElementById('tDsp');e.textContent='⏱ '+tLeft;e.classList.toggle('urg',tLeft<=5);}
+
+window.selAns=async(i)=>{
+  if(myAns!==-1)return;myAns=i;
+  document.querySelectorAll('.ab').forEach((b,j)=>{b.disabled=true;if(j!==i)b.style.opacity='.4';});
+  document.getElementById('ab'+i).classList.add('sel');
+  await update(ref(db,'sessions/'+code+'/answers/'+myName),{answer:i,timeLeft:tLeft});
+  toast('✅ Réponse envoyée !');
+};
+
+function revealLocal(correct){
+  clearInterval(tmInt);
+  const btns=document.querySelectorAll('.ab');
+  btns.forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add('correct');else if(i===myAns)b.classList.add('wsel');else b.classList.add('woth');});
+  const ok=myAns===correct;
+  const pts=ok?Math.round(1000*(0.5+0.5*(tLeft/cqTime))):0;
+  myScore+=pts;
+  showFeedback(ok,pts);
+}
+
+function showFeedback(ok,pts){
+  const box=document.getElementById('fbBox');
+  if(ok){box.className='fb good';document.getElementById('fbE').textContent=['🎉','🔥','⚡','💥','🚀'][~~(Math.random()*5)];document.getElementById('fbT').textContent=['EXCELLENT !','BRAVO !','TOP !','PARFAIT !'][~~(Math.random()*4)];}
+  else if(myAns===-1){box.className='fb bad';document.getElementById('fbE').textContent='⏰';document.getElementById('fbT').textContent='TROP LENT !';}
+  else{box.className='fb bad';document.getElementById('fbE').textContent=['😅','💀','🤦','😬'][~~(Math.random()*4)];document.getElementById('fbT').textContent=['RATÉ !','OUPS…','PRESQUE !','DOMMAGE !'][~~(Math.random()*4)];}
+  document.getElementById('fbP').textContent=(ok?'+':'')+pts.toLocaleString()+' points';
+  document.getElementById('fbTot').textContent='Total : '+myScore.toLocaleString()+' pts';
+  setTimeout(()=>go('sF'),1500);
+}
+
+function showLB(scores,fin){
+  const ri=scores.findIndex(s=>s.name===myName);const rn=ri+1;
+  const med=['🥇','🥈','🥉'];
+  const [rnkId,scId,lbId]=fin?['finRnk','finSc','finLb']:['myRnk','mySc','miniLb'];
+  document.getElementById(rnkId).textContent=rn>0?'#'+rn:'—';
+  document.getElementById(scId).textContent=myScore.toLocaleString()+' pts';
+  document.getElementById(lbId).innerHTML=scores.slice(0,10).map((s,i)=>`<div class="mr ${s.name===myName?'me':''}"><div class="mrk">${med[i]||(i+1)}</div><div>${s.icon||'🎯'}</div><div class="mrn">${s.name===myName?'👉 ':''} ${s.name}</div><div class="msc">${s.score.toLocaleString()}</div></div>`).join('');
+  if(fin){document.getElementById('trophy').textContent=['🥇','🥈','🥉'][ri]||'🎖️';go('sFin');if(rn<=3)confetti();}
+  else{go('sLB');if(rn===1)confetti();}
+}
+
+function go(id){document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');scrollTo(0,0);}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
+function confetti(){const c=document.getElementById('cc'),cl=['#ff6b35','#f7c948','#4ecdc4','#a78bfa','#ff4d6d','#22d3a5','#3b82f6'];for(let i=0;i<80;i++){const e=document.createElement('div');e.className='cp';e.style.cssText=`left:${Math.random()*100}%;background:${cl[~~(Math.random()*cl.length)]};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()}s;width:${6+Math.random()*8}px;height:${8+Math.random()*10}px;border-radius:${Math.random()>.5?'50%':'2px'}`;c.appendChild(e);setTimeout(()=>e.remove(),4000);}}
+</script>
+</body>
+</html>
