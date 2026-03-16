@@ -285,6 +285,7 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
   <div class="brow" style="margin-top:28px">
     <button class="btn bg bb" onclick="startQuiz()">▶ Démarrer</button>
     <button class="btn bs" onclick="showSec('sSetup')">← Retour</button>
+    <button class="btn bs" onclick="closeSession()" style="color:var(--rd);border-color:rgba(255,77,109,.3)">🔴 Fermer la session</button>
   </div>
 </div>
 
@@ -310,6 +311,7 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
   <div id="adsp"></div>
   <div class="brow" style="margin-top:20px">
     <button class="btn ba bb" onclick="revealAnswer()">👁 Révéler la réponse</button>
+    <button class="btn bs" onclick="closeSession()" style="color:var(--rd);border-color:rgba(255,77,109,.3)">🔴 Terminer</button>
   </div>
 </div>
 
@@ -357,6 +359,64 @@ const app=initializeApp(FB_CONFIG);
 const db=getDatabase(app);
 
 let qs=[],players={},answers_q={},sRef,timerIv=null,tLeft=0,qIdx=-1,unsubA=null,unsubP=null;
+
+// Auto-reconnect host if page was reloaded
+(async()=>{
+  const saved=sessionStorage.getItem('qm_host_session');
+  if(!saved)return;
+  const sv=JSON.parse(saved);
+  const snap=await get(ref(db,'sessions/'+sv.code)).catch(()=>null);
+  if(!snap||!snap.exists()){sessionStorage.removeItem('qm_host_session');return;}
+  const d=snap.val();
+  if(d.phase==='final'){sessionStorage.removeItem('qm_host_session');return;}
+  // Restore state
+  qs=sv.questions||d.questions||[];
+  qIdx=d.qIndex||-1;
+  window._sCode=sv.code;
+  const sUrl=window.location.href.replace('quizmaster-host.html','quizmaster-student.html')+'?code='+sv.code;
+  window._sUrl=sUrl;
+  sRef=ref(db,'sessions/'+sv.code);
+  // Restore players
+  const pSnap=await get(ref(db,'sessions/'+sv.code+'/players')).catch(()=>null);
+  players=pSnap&&pSnap.exists()?pSnap.val():{};
+  document.getElementById('quizTitle').value=sv.title||d.title||'Quiz';
+  renderQList();
+  // Re-subscribe to players
+  if(unsubP)unsubP();
+  unsubP=onValue(ref(db,'sessions/'+sv.code+'/players'),snap2=>{players=snap2.val()||{};renderPlayers();});
+  // Show the right screen
+  const ph=d.phase;
+  if(ph==='lobby'){
+    document.getElementById('lobTitle').textContent=sv.title||d.title||'Quiz';
+    document.getElementById('scode').textContent=sv.code;
+    document.getElementById('surl').textContent=sUrl;
+    document.getElementById('qrw').innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data='+encodeURIComponent(sUrl)+'" alt="QR">';
+    showSec('sLobby');
+  } else if(ph==='question'||ph==='timeout'){
+    // Restore question view
+    const q=qs[d.qIndex];
+    if(q){
+      tLeft=0;
+      answers_q=d.answers||{};
+      document.getElementById('qcur').textContent=(d.qIndex||0)+1;
+      document.getElementById('qtot').textContent=qs.length;
+      document.getElementById('qtxt').textContent=q.text;
+      document.getElementById('tplayers').textContent=Object.keys(players).length;
+      const adsp=document.getElementById('adsp');
+      const CLS2=['aa','ab','ac','ad'],ICN2=['▲','●','◆','⬟'];
+      if(q.type==='qcm'){adsp.className='adsp';adsp.innerHTML=q.answers.map((a,i)=>`<div class="atile ${CLS2[i]}" id="tile${i}"><span style="font-size:1.4rem">${ICN2[i]}</span><div><div>${a}</div><div class="rbar"><div class="rfill" id="bar${i}" style="width:0%"></div></div><div class="cnt" id="cnt${i}">0</div></div></div>`).join('');}
+      showSec('sQuestion');
+      updateABar();
+      if(unsubA)unsubA();
+      unsubA=onValue(ref(db,'sessions/'+sv.code+'/answers'),snap3=>{answers_q=snap3.val()||{};updateABar();if(q.type==='open')renderOpenAnswers();});
+    }
+  } else if(ph==='reveal'){
+    showSec('sReveal');
+  } else if(ph==='leaderboard'){
+    showLeaderboard(false);
+  }
+  toast('🔄 Session restaurée !');
+})();
 let currentType='qcm';
 const CLS=['aa','ab','ac','ad'],ICN=['▲','●','◆','⬟'];
 const TYPE_LABELS={qcm:'QCM',tf:'Vrai/Faux',open:'Ouverte',order:'Ordre',blank:'Trous'};
@@ -377,7 +437,7 @@ window.switchType=function(type){
 // ── BLANK PREVIEW ──
 document.getElementById('blank-text').addEventListener('input',function(){
   const txt=this.value;
-  const preview=txt.replace(/\[([^\]]+)\]/g,'<span class="blank-word">$1</span>');
+  const preview=txt.replace(/\n/g,'<br>').replace(/\[([^\]]+)\]/g,'<span class="blank-word">$1</span>');
   const el=document.getElementById('blank-preview');
   if(txt.includes('[')){el.style.display='block';el.innerHTML='<span style="font-size:.8rem;color:var(--mu)">Aperçu :</span><br>'+preview;}
   else el.style.display='none';
@@ -472,6 +532,7 @@ window.startLobby=async function(){
   document.getElementById('surl').textContent=sUrl;
   document.getElementById('qrw').innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data='+encodeURIComponent(sUrl)+'" alt="QR">';
   window._sCode=code;window._sUrl=sUrl;
+  sessionStorage.setItem('qm_host_session',JSON.stringify({code,title:document.getElementById('quizTitle').value||'Quiz',questions:qs}));
   showSec('sLobby');
   if(unsubP)unsubP();
   unsubP=onValue(ref(db,'sessions/'+code+'/players'),snap=>{players=snap.val()||{};renderPlayers();});
@@ -514,7 +575,7 @@ window.nextQ=async function(){
     adsp.className='';
     adsp.innerHTML=`<div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:20px"><div style="color:var(--mu);font-size:.85rem;margin-bottom:12px">Les étudiants remettent ces éléments dans l'ordre :</div>${shuffled.map((it,i)=>`<div style="background:var(--surface);border:1px solid var(--br);border-radius:10px;padding:12px 16px;margin-bottom:8px;font-weight:700">${i+1}. ${it}</div>`).join('')}<div style="color:var(--mu);font-size:.8rem;margin-top:8px">Bon ordre : ${q.items.map((it,i)=>`<strong>${i+1}. ${it}</strong>`).join(' → ')}</div></div>`;
   } else if(q.type==='blank'){
-    const display=q.text.replace(/\[([^\]]+)\]/g,'<span style="background:var(--a2);color:#000;padding:2px 10px;border-radius:8px;margin:0 4px">___</span>');
+    const display=q.text.replace(/\n/g,'<br>').replace(/\[([^\]]+)\]/g,'<span style="background:var(--a2);color:#000;padding:2px 10px;border-radius:8px;margin:0 4px">___</span>');
     adsp.className='';
     adsp.innerHTML=`<div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:24px;font-size:1.2rem;font-weight:700;line-height:2;text-align:center">${display}</div><div style="color:var(--mu);font-size:.8rem;margin-top:8px;text-align:center">Mots à trouver : ${q.blanks.join(', ')}</div>`;
   }
@@ -576,8 +637,16 @@ window.revealAnswer=async function(){
       q.blanks.forEach((b,i)=>{if((studentBlanks[i]||'').toLowerCase().trim()===b.toLowerCase().trim())correct++;});
       bonus=Math.round(q.points*(correct/q.blanks.length)*(0.5+0.5*(data.timeLeft/q.time)));
     }
+    // No answer submitted (null) or wrong = 0 points
+    if(data.answer===null||data.answer===undefined){bonus=0;}
     if(bonus>0){upd['sessions/'+window._sCode+'/players/'+name+'/score']=cur+bonus;upd['sessions/'+window._sCode+'/players/'+name+'/lastPoints']=bonus;}
     else{upd['sessions/'+window._sCode+'/players/'+name+'/lastPoints']=0;}
+  });
+  // Players who never submitted anything also get lastPoints=0
+  Object.keys(players).forEach(name=>{
+    if(!answers_q[name]){
+      upd['sessions/'+window._sCode+'/players/'+name+'/lastPoints']=0;
+    }
   });
   upd['sessions/'+window._sCode+'/phase']='reveal';
   upd['sessions/'+window._sCode+'/correct']=q.type==='tf'?String(q.correct):q.correct;
@@ -610,7 +679,7 @@ window.revealAnswer=async function(){
     const correct_count=Object.values(answers_q).filter(data=>{const s=data.answer||[];return q.items.every((item,i)=>s[i]===item);}).length;
     radsp.innerHTML=`<div class="order-reveal"><div style="font-family:Bangers,cursive;font-size:1.2rem;color:var(--a2);margin-bottom:8px">Bon ordre :</div>${q.items.map((item,i)=>`<div class="order-tile ok"><div class="order-num">${i+1}</div><div>${item}</div></div>`).join('')}</div>`;
   } else if(q.type==='blank'){
-    const display=q.text.replace(/\[([^\]]+)\]/g,'<span class="blank-word">$1</span>');
+    const display=q.text.replace(/\n/g,'<br>').replace(/\[([^\]]+)\]/g,'<span class="blank-word">$1</span>');
     radsp.className='';
     radsp.innerHTML=`<div class="blank-reveal">${display}</div>`;
   }
@@ -642,8 +711,15 @@ window.showLeaderboard=async function(isFinal){
   if(!isFinal){const isL=qIdx>=qs.length-1;const btn=document.getElementById('lbNext');btn.textContent=isL?'🎉 Terminer':'▶ Question '+(qIdx+2);btn.onclick=isL?showFinal:nextQ;showSec('sLeaderboard');}
   else{showSec('sFinal');confetti();}
 };
-function showFinal(){window.showLeaderboard(true);}
-window.resetSession=async function(){if(sRef)await remove(sRef);location.reload();};
+function showFinal(){sessionStorage.removeItem('qm_host_session');window.showLeaderboard(true);}
+window.resetSession=async function(){if(sRef)await remove(sRef);sessionStorage.removeItem('qm_host_session');location.reload();};
+window.closeSession=async function(){
+  if(!confirm('Fermer définitivement cette session ? Les étudiants seront déconnectés.'))return;
+  if(sRef)await update(sRef,{phase:'final',leaderboard:Object.entries(players).sort((a,b)=>(b[1].score||0)-(a[1].score||0)).map(([n,p])=>({name:n,score:p.score||0,icon:p.icon||'🎯'}))});
+  sessionStorage.removeItem('qm_host_session');
+  clearInterval(timerIv);
+  showFinal();
+};
 window.showSec=function(id){document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);};
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
 // ── SAVE / LOAD ──
