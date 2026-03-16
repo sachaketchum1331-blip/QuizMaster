@@ -18,25 +18,50 @@ h1{font-family:'Bangers',cursive;font-size:2.8rem;letter-spacing:2px;margin-bott
 h2{font-family:'Bangers',cursive;font-size:1.7rem;color:var(--a2);margin-bottom:16px}
 .sub{color:var(--mu);font-size:.9rem;margin-bottom:26px}
 .card{background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:22px;margin-bottom:16px}
-input[type=text],input[type=number],textarea{width:100%;background:var(--surface);border:1px solid var(--br);border-radius:10px;color:var(--tx);font-family:'Nunito',sans-serif;font-size:1rem;padding:11px 14px;outline:none;transition:border .2s}
-input:focus,textarea:focus{border-color:var(--a1)}textarea{resize:vertical;min-height:68px}
+input[type=text],input[type=number],textarea,select{width:100%;background:var(--surface);border:1px solid var(--br);border-radius:10px;color:var(--tx);font-family:'Nunito',sans-serif;font-size:1rem;padding:11px 14px;outline:none;transition:border .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--a1)}
+textarea{resize:vertical;min-height:68px}
+select option{background:var(--card)}
 .lbl{display:block;font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:6px}
+/* TYPE TABS */
+.type-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.ttab{border:1px solid var(--br);background:var(--surface);color:var(--mu);border-radius:10px;padding:8px 14px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s}
+.ttab:hover{border-color:var(--a1);color:var(--tx)}
+.ttab.on{background:var(--a1);border-color:var(--a1);color:#fff}
+.qtype-form{display:none}.qtype-form.on{display:block}
+/* ANSWERS */
 .agrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .ainp{display:flex;align-items:center;gap:10px}
 .let{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0}
 .la{background:var(--rd)}.lb2{background:#3b82f6}.lc{background:var(--gr);color:#000}.ld{background:var(--a2);color:#000}
 .cr{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.9rem}
 .cr input{accent-color:var(--gr);width:16px;height:16px}
+/* ORDER items */
+.order-items{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.order-item{display:flex;align-items:center;gap:10px}
+.order-item input{flex:1}
+.order-item .drag-handle{color:var(--mu);font-size:1.2rem;cursor:grab}
+/* BLANKS */
+.blank-hint{color:var(--mu);font-size:.82rem;margin-top:6px;line-height:1.5}
+/* QUESTION LIST */
 .qlist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.qi{background:var(--surface);border:1px solid var(--br);border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between}
-.qn{font-family:'Bangers',cursive;font-size:1.2rem;color:var(--a2);margin-right:10px}
-.qdel{color:var(--rd);cursor:pointer;font-size:1.1rem;background:none;border:none;padding:4px}
+.qi{background:var(--surface);border:1px solid var(--br);border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.qn{font-family:'Bangers',cursive;font-size:1.2rem;color:var(--a2);margin-right:6px;flex-shrink:0}
+.qtype-badge{font-size:.7rem;font-weight:900;padding:3px 8px;border-radius:99px;flex-shrink:0}
+.tb-qcm{background:rgba(255,107,53,.2);color:var(--a1)}
+.tb-tf{background:rgba(78,205,196,.2);color:var(--a3)}
+.tb-open{background:rgba(167,139,250,.2);color:var(--a4)}
+.tb-order{background:rgba(247,201,72,.2);color:var(--a2)}
+.tb-blank{background:rgba(34,211,165,.2);color:var(--gr)}
+.qdel{color:var(--rd);cursor:pointer;font-size:1.1rem;background:none;border:none;padding:4px;flex-shrink:0}
+/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:8px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;border:none;border-radius:12px;padding:13px 26px;cursor:pointer;transition:transform .15s;letter-spacing:.5px}
 .btn:hover{transform:translateY(-2px)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .bp{background:var(--a1);color:#fff;box-shadow:0 4px 20px rgba(255,107,53,.4)}
 .bs{background:var(--card);color:var(--tx);border:1px solid var(--br)}.bg{background:var(--gr);color:#000}.ba{background:var(--a2);color:#000}
 .bb{font-size:1.3rem;padding:16px 40px;border-radius:14px}
 .brow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+/* LOBBY */
 .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:20px}
 .cbox{text-align:center;background:var(--card);border:2px solid var(--a2);border-radius:var(--rr);padding:28px;box-shadow:0 0 40px rgba(247,201,72,.12)}
 .cbig{font-family:'Bangers',cursive;font-size:4.5rem;letter-spacing:8px;color:var(--a2);text-shadow:0 0 30px rgba(247,201,72,.5)}
@@ -48,6 +73,7 @@ input:focus,textarea:focus{border-color:var(--a1)}textarea{resize:vertical;min-h
 .pchip{background:var(--surface);border:1px solid var(--br);border-radius:99px;padding:5px 12px;font-size:.88rem;font-weight:700;animation:pop .3s ease}
 @keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
 .pcnt{font-size:2.8rem;font-family:'Bangers',cursive;color:var(--a1)}
+/* QUESTION DISPLAY */
 .qhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .qprog{font-family:'Bangers',cursive;font-size:1.4rem;color:var(--mu)}
 .trw{position:relative}.tnum{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bangers',cursive;font-size:1.7rem}
@@ -60,9 +86,25 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
 .rbar{height:7px;background:rgba(255,255,255,.2);border-radius:4px;margin-top:5px;overflow:hidden}
 .rfill{height:100%;background:rgba(255,255,255,.7);border-radius:4px;transition:width 1s}
 .cnt{font-size:.8rem;opacity:.8;margin-top:3px}
+/* OPEN ANSWERS LIST */
+.open-answers{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-top:8px}
+.open-ans-item{background:var(--surface);border:1px solid var(--br);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+.open-ans-name{font-size:.8rem;color:var(--mu)}
+.open-ans-text{font-weight:700}
+/* ORDER REVEAL */
+.order-reveal{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.order-tile{background:var(--card);border:1px solid var(--br);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:1rem}
+.order-tile.ok{border-color:var(--gr);background:rgba(34,211,165,.1)}
+.order-tile.wr{opacity:.4}
+.order-num{font-family:'Bangers',cursive;font-size:1.4rem;color:var(--a2);width:28px}
+/* BLANK REVEAL */
+.blank-reveal{font-size:1.3rem;font-weight:900;line-height:2;text-align:center;background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:24px;margin-top:12px}
+.blank-word{display:inline-block;background:var(--gr);color:#000;padding:2px 10px;border-radius:8px;margin:0 4px}
+/* ANSWERED BAR */
 .abar{background:var(--card);border:1px solid var(--br);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:14px}
 .aprog{flex:1;height:9px;background:var(--surface);border-radius:5px;overflow:hidden}
 .afill{height:100%;background:var(--a3);border-radius:5px;transition:width .5s}
+/* LEADERBOARD */
 .podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin:20px 0 28px}
 .pi{text-align:center;display:flex;flex-direction:column;align-items:center}
 .pst{border-radius:12px 12px 0 0;width:110px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px}
@@ -76,6 +118,7 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
 .rgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
 .rst{background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:18px;text-align:center}
 .rst .rn{font-family:'Bangers',cursive;font-size:2.8rem}.rst .rl{font-size:.75rem;color:var(--mu);text-transform:uppercase;letter-spacing:1px}
+/* MISC */
 .confetti-c{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden}
 .confetti-p{position:absolute;opacity:0;animation:cfall linear forwards}
 @keyframes cfall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
@@ -92,50 +135,109 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
 <header><div class="logo">Quiz<span>Master</span> 🎯</div><div class="badge">MODE PROF</div></header>
 <main>
 
+<!-- SETUP -->
 <div class="sec on" id="sSetup">
   <h1>🎮 Créez votre Quiz</h1>
-  <p class="sub">Ajoutez vos questions et lancez la session en direct.</p>
+  <p class="sub">5 types de questions disponibles — mélangez-les librement !</p>
   <div class="card">
     <span class="lbl">Titre du quiz</span>
     <input type="text" id="quizTitle" placeholder="Ex : Révisions Chapitre 5" value="Mon Super Quiz">
   </div>
+
   <h2>➕ Nouvelle question</h2>
   <div class="card">
-    <span class="lbl">Question</span>
-    <textarea id="qText" placeholder="Tapez votre question…"></textarea>
-    <div class="agrid" style="margin-top:14px">
-      <div><span class="lbl">Réponse A</span><div class="ainp"><div class="let la">A</div><input type="text" id="a0" placeholder="Réponse A"></div></div>
-      <div><span class="lbl">Réponse B</span><div class="ainp"><div class="let lb2">B</div><input type="text" id="a1" placeholder="Réponse B"></div></div>
-      <div><span class="lbl">Réponse C</span><div class="ainp"><div class="let lc">C</div><input type="text" id="a2" placeholder="Réponse C (optionnel)"></div></div>
-      <div><span class="lbl">Réponse D</span><div class="ainp"><div class="let ld">D</div><input type="text" id="a3" placeholder="Réponse D (optionnel)"></div></div>
+    <!-- TYPE SELECTOR -->
+    <span class="lbl">Type de question</span>
+    <div class="type-tabs">
+      <button class="ttab on" onclick="switchType('qcm')">🔴 QCM</button>
+      <button class="ttab" onclick="switchType('tf')">✅ Vrai / Faux</button>
+      <button class="ttab" onclick="switchType('open')">💬 Question ouverte</button>
+      <button class="ttab" onclick="switchType('order')">🔢 Remettre en ordre</button>
+      <button class="ttab" onclick="switchType('blank')">✏️ Texte à trous</button>
     </div>
-    <div class="flex mt">
-      <span class="lbl" style="margin:0">Bonne réponse :</span>
-      <label class="cr"><input type="radio" name="cr" value="0" checked> A</label>
-      <label class="cr"><input type="radio" name="cr" value="1"> B</label>
-      <label class="cr"><input type="radio" name="cr" value="2"> C</label>
-      <label class="cr"><input type="radio" name="cr" value="3"> D</label>
+
+    <!-- QCM -->
+    <div class="qtype-form on" id="form-qcm">
+      <span class="lbl">Question</span>
+      <textarea id="qcm-text" placeholder="Tapez votre question…"></textarea>
+      <div class="agrid" style="margin-top:14px">
+        <div><span class="lbl">Réponse A</span><div class="ainp"><div class="let la">A</div><input type="text" id="qcm-a0" placeholder="Réponse A"></div></div>
+        <div><span class="lbl">Réponse B</span><div class="ainp"><div class="let lb2">B</div><input type="text" id="qcm-a1" placeholder="Réponse B"></div></div>
+        <div><span class="lbl">Réponse C</span><div class="ainp"><div class="let lc">C</div><input type="text" id="qcm-a2" placeholder="Réponse C (optionnel)"></div></div>
+        <div><span class="lbl">Réponse D</span><div class="ainp"><div class="let ld">D</div><input type="text" id="qcm-a3" placeholder="Réponse D (optionnel)"></div></div>
+      </div>
+      <div class="flex mt">
+        <span class="lbl" style="margin:0">Bonne réponse :</span>
+        <label class="cr"><input type="radio" name="qcm-cr" value="0" checked> A</label>
+        <label class="cr"><input type="radio" name="qcm-cr" value="1"> B</label>
+        <label class="cr"><input type="radio" name="qcm-cr" value="2"> C</label>
+        <label class="cr"><input type="radio" name="qcm-cr" value="3"> D</label>
+      </div>
     </div>
-    <div class="flex mt">
-      <div><span class="lbl">⏱ Temps (s)</span><input type="number" id="qt" value="20" min="5" max="120" style="width:86px"></div>
-      <div><span class="lbl">⭐ Points max</span><input type="number" id="qp" value="1000" min="100" max="2000" step="100" style="width:106px"></div>
+
+    <!-- VRAI/FAUX -->
+    <div class="qtype-form" id="form-tf">
+      <span class="lbl">Question</span>
+      <textarea id="tf-text" placeholder="Tapez votre affirmation…"></textarea>
+      <div class="flex mt">
+        <span class="lbl" style="margin:0">Bonne réponse :</span>
+        <label class="cr"><input type="radio" name="tf-cr" value="true" checked> ✅ Vrai</label>
+        <label class="cr"><input type="radio" name="tf-cr" value="false"> ❌ Faux</label>
+      </div>
+    </div>
+
+    <!-- OPEN -->
+    <div class="qtype-form" id="form-open">
+      <span class="lbl">Question ouverte</span>
+      <textarea id="open-text" placeholder="Ex : Citez 3 causes de la Révolution française…"></textarea>
+      <div style="color:var(--mu);font-size:.82rem;margin-top:8px;line-height:1.5">💡 Les réponses s'affichent en direct sur votre écran. Vous choisissez vous-même les meilleures réponses à valoriser — aucune correction automatique.</div>
+    </div>
+
+    <!-- ORDER -->
+    <div class="qtype-form" id="form-order">
+      <span class="lbl">Consigne</span>
+      <input type="text" id="order-text" placeholder="Ex : Remettez ces événements dans l'ordre chronologique">
+      <div class="order-items" id="order-items">
+        <div class="order-item"><span class="drag-handle">⠿</span><input type="text" placeholder="Élément 1 (le premier dans le bon ordre)"></div>
+        <div class="order-item"><span class="drag-handle">⠿</span><input type="text" placeholder="Élément 2"></div>
+        <div class="order-item"><span class="drag-handle">⠿</span><input type="text" placeholder="Élément 3"></div>
+      </div>
+      <button class="btn bs" style="margin-top:10px;padding:8px 16px;font-size:.85rem" onclick="addOrderItem()">+ Ajouter un élément</button>
+      <div style="color:var(--mu);font-size:.82rem;margin-top:8px">💡 Entrez les éléments dans le <strong>bon ordre</strong>. Les étudiants les recevront mélangés.</div>
+    </div>
+
+    <!-- BLANK -->
+    <div class="qtype-form" id="form-blank">
+      <span class="lbl">Phrase avec trous</span>
+      <textarea id="blank-text" placeholder="Ex : La Révolution française a eu lieu en [1789] sous le règne de [Louis XVI]."></textarea>
+      <div class="blank-hint">💡 Entourez les mots à cacher avec des <strong>[crochets]</strong>. Ces mots seront remplacés par des cases vides que les étudiants devront compléter.</div>
+      <div id="blank-preview" style="margin-top:12px"></div>
+    </div>
+
+    <!-- COMMON SETTINGS -->
+    <hr style="border:none;border-top:1px solid var(--br);margin:18px 0">
+    <div class="flex">
+      <div><span class="lbl">⏱ Temps (s)</span><input type="number" id="q-time" value="20" min="5" max="120" style="width:86px"></div>
+      <div id="points-wrap"><span class="lbl">⭐ Points max</span><input type="number" id="q-points" value="1000" min="0" max="2000" step="100" style="width:106px"></div>
     </div>
     <div class="brow">
-      <button class="btn bp" onclick="addQ()">✚ Ajouter</button>
+      <button class="btn bp" onclick="addQuestion()">✚ Ajouter la question</button>
       <button class="btn bs" onclick="loadDemo()">🎲 Charger démo</button>
     </div>
   </div>
+
   <h2>📋 Questions (<span id="qcnt">0</span>)</h2>
   <div class="qlist" id="qlist"></div>
-  <div class="rgpd">🔒 <span>RGPD</span> — Les données transitent uniquement par votre base Firebase personnelle hébergée en Europe (europe-west1). Aucun tiers ne collecte de données. Les pseudonymes sont supprimés à la fin de chaque session.</div>
+  <div class="rgpd">🔒 <span>RGPD</span> — Données hébergées sur votre Firebase personnel en Europe. Pseudonymes supprimés en fin de session.</div>
   <div class="brow">
     <button class="btn bg bb" onclick="startLobby()" id="startBtn" disabled>🚀 Lancer la session</button>
   </div>
 </div>
 
+<!-- LOBBY -->
 <div class="sec" id="sLobby">
   <h1>🎯 <span id="lobTitle">Quiz</span></h1>
-  <p class="sub">Partagez le code ou scannez le QR code</p>
+  <p class="sub">Partagez le code ou le QR code</p>
   <div class="lgrid">
     <div class="cbox">
       <div style="font-size:.8rem;color:var(--mu);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px">Code de session</div>
@@ -157,6 +259,7 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
   </div>
 </div>
 
+<!-- QUESTION -->
 <div class="sec" id="sQuestion">
   <div class="qhdr">
     <div class="qprog">Q <span id="qcur">1</span>/<span id="qtot">?</span></div>
@@ -175,22 +278,24 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
     <div class="aprog"><div class="afill" id="afill" style="width:0%"></div></div>
     <span id="apct" style="font-family:Bangers,cursive;font-size:1.1rem;color:var(--a3)">0%</span>
   </div>
-  <div class="adsp" id="adsp"></div>
+  <div id="adsp"></div>
   <div class="brow" style="margin-top:20px">
     <button class="btn ba bb" onclick="revealAnswer()">👁 Révéler la réponse</button>
   </div>
 </div>
 
+<!-- REVEAL -->
 <div class="sec" id="sReveal">
   <h2>✅ Résultat de la question</h2>
   <div class="qtxt" id="rqtxt"></div>
-  <div class="adsp" id="radsp"></div>
+  <div id="radsp"></div>
   <div class="rgrid mt" id="rstats"></div>
   <div class="brow" style="margin-top:20px">
     <button class="btn bp bb" onclick="showLeaderboard(false)">🏆 Voir le classement</button>
   </div>
 </div>
 
+<!-- LEADERBOARD -->
 <div class="sec" id="sLeaderboard">
   <h2>🏆 Classement en direct</h2>
   <div class="podium" id="pod"></div>
@@ -201,6 +306,7 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
   </div>
 </div>
 
+<!-- FINAL -->
 <div class="sec" id="sFinal">
   <h1 style="text-align:center">🎉 Quiz terminé !</h1>
   <div class="podium" id="fpod"></div>
@@ -222,34 +328,110 @@ const app=initializeApp(FB_CONFIG);
 const db=getDatabase(app);
 
 let qs=[],players={},answers_q={},sRef,timerIv=null,tLeft=0,qIdx=-1,unsubA=null,unsubP=null;
-const ICONS=['🔥','⚡','🎯','🚀','💎','👑','🦄','🎸'];
+let currentType='qcm';
 const CLS=['aa','ab','ac','ad'],ICN=['▲','●','◆','⬟'];
+const TYPE_LABELS={qcm:'QCM',tf:'Vrai/Faux',open:'Ouverte',order:'Ordre',blank:'Trous'};
+const TYPE_CSS={qcm:'tb-qcm',tf:'tb-tf',open:'tb-open',order:'tb-order',blank:'tb-blank'};
 
-window.addQ=function(){
-  const txt=document.getElementById('qText').value.trim();
-  if(!txt){toast('⚠️ Question vide !');return;}
-  const ans=[0,1,2,3].map(i=>document.getElementById('a'+i).value.trim()).filter(Boolean);
-  if(ans.length<2){toast('⚠️ Minimum 2 réponses !');return;}
-  const cor=parseInt(document.querySelector('input[name=cr]:checked').value);
-  if(cor>=ans.length){toast('⚠️ Bonne réponse inexistante !');return;}
-  qs.push({text:txt,answers:ans,correct:cor,time:parseInt(document.getElementById('qt').value)||20,points:parseInt(document.getElementById('qp').value)||1000});
+// ── TYPE SWITCH ──
+window.switchType=function(type){
+  currentType=type;
+  document.querySelectorAll('.ttab').forEach((t,i)=>{
+    const types=['qcm','tf','open','order','blank'];
+    t.classList.toggle('on',types[i]===type);
+  });
+  document.querySelectorAll('.qtype-form').forEach(f=>f.classList.remove('on'));
+  document.getElementById('form-'+type).classList.add('on');
+  document.getElementById('points-wrap').style.display=type==='open'?'none':'block';
+};
+
+// ── BLANK PREVIEW ──
+document.getElementById('blank-text').addEventListener('input',function(){
+  const txt=this.value;
+  const preview=txt.replace(/\[([^\]]+)\]/g,'<span class="blank-word">$1</span>');
+  const el=document.getElementById('blank-preview');
+  if(txt.includes('[')){el.style.display='block';el.innerHTML='<span style="font-size:.8rem;color:var(--mu)">Aperçu :</span><br>'+preview;}
+  else el.style.display='none';
+});
+
+// ── ORDER ITEMS ──
+window.addOrderItem=function(){
+  const container=document.getElementById('order-items');
+  const n=container.children.length+1;
+  const div=document.createElement('div');div.className='order-item';
+  div.innerHTML=`<span class="drag-handle">⠿</span><input type="text" placeholder="Élément ${n}"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--rd);cursor:pointer;font-size:1.1rem;padding:4px">✕</button>`;
+  container.appendChild(div);
+};
+
+// ── ADD QUESTION ──
+window.addQuestion=function(){
+  let q={type:currentType,time:parseInt(document.getElementById('q-time').value)||20,points:parseInt(document.getElementById('q-points').value)||1000};
+  if(currentType==='qcm'){
+    const txt=document.getElementById('qcm-text').value.trim();
+    if(!txt){toast('⚠️ Question vide !');return;}
+    const ans=[0,1,2,3].map(i=>document.getElementById('qcm-a'+i).value.trim()).filter(Boolean);
+    if(ans.length<2){toast('⚠️ Minimum 2 réponses !');return;}
+    const cor=parseInt(document.querySelector('input[name="qcm-cr"]:checked').value);
+    if(cor>=ans.length){toast('⚠️ Bonne réponse inexistante !');return;}
+    q={...q,text:txt,answers:ans,correct:cor};
+  } else if(currentType==='tf'){
+    const txt=document.getElementById('tf-text').value.trim();
+    if(!txt){toast('⚠️ Affirmation vide !');return;}
+    const cor=document.querySelector('input[name="tf-cr"]:checked').value==='true';
+    q={...q,text:txt,correct:cor};
+  } else if(currentType==='open'){
+    const txt=document.getElementById('open-text').value.trim();
+    if(!txt){toast('⚠️ Question vide !');return;}
+    q={...q,text:txt,points:0};
+  } else if(currentType==='order'){
+    const txt=document.getElementById('order-text').value.trim();
+    if(!txt){toast('⚠️ Consigne vide !');return;}
+    const items=[...document.querySelectorAll('#order-items input')].map(i=>i.value.trim()).filter(Boolean);
+    if(items.length<2){toast('⚠️ Minimum 2 éléments !');return;}
+    q={...q,text:txt,items};
+  } else if(currentType==='blank'){
+    const txt=document.getElementById('blank-text').value.trim();
+    if(!txt){toast('⚠️ Texte vide !');return;}
+    const blanks=[];let m;const re=/\[([^\]]+)\]/g;
+    while((m=re.exec(txt))!==null)blanks.push(m[1]);
+    if(blanks.length===0){toast('⚠️ Aucun [trou] détecté !');return;}
+    q={...q,text:txt,blanks};
+  }
+  qs.push(q);
   renderQList();
-  document.getElementById('qText').value='';
-  [0,1,2,3].forEach(i=>document.getElementById('a'+i).value='');
-  document.querySelectorAll('input[name=cr]')[0].checked=true;
+  // Reset forms
+  ['qcm-text','tf-text','open-text','order-text','blank-text'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  [0,1,2,3].forEach(i=>{const el=document.getElementById('qcm-a'+i);if(el)el.value='';});
+  document.getElementById('blank-preview').style.display='none';
   toast('✅ Question ajoutée !');
 };
-window.deleteQ=function(i){qs.splice(i,1);renderQList();};
+
 function renderQList(){
   document.getElementById('qcnt').textContent=qs.length;
   document.getElementById('startBtn').disabled=qs.length===0;
-  document.getElementById('qlist').innerHTML=qs.map((q,i)=>`<div class="qi"><span class="qn">${i+1}</span><span style="flex:1;font-size:.92rem">${q.text.substring(0,70)}${q.text.length>70?'…':''}</span><span style="color:var(--mu);font-size:.78rem;margin-right:8px">${q.time}s</span><button class="qdel" onclick="deleteQ(${i})">✕</button></div>`).join('');
+  document.getElementById('qlist').innerHTML=qs.map((q,i)=>`
+    <div class="qi">
+      <span class="qn">${i+1}</span>
+      <span class="qtype-badge ${TYPE_CSS[q.type]}">${TYPE_LABELS[q.type]}</span>
+      <span style="flex:1;font-size:.9rem;margin:0 8px">${q.text.substring(0,60)}${q.text.length>60?'…':''}</span>
+      <span style="color:var(--mu);font-size:.78rem;margin-right:6px">${q.time}s</span>
+      <button class="qdel" onclick="deleteQ(${i})">✕</button>
+    </div>`).join('');
 }
+window.deleteQ=function(i){qs.splice(i,1);renderQList();};
+
 window.loadDemo=function(){
-  qs=[{text:"Quelle est la capitale de la France ?",answers:["Paris","Lyon","Marseille","Bordeaux"],correct:0,time:20,points:1000},{text:"Combien font 12 × 8 ?",answers:["86","96","106","76"],correct:1,time:15,points:1000},{text:"Qui a peint la Joconde ?",answers:["Michel-Ange","Raphaël","Léonard de Vinci","Botticelli"],correct:2,time:20,points:1000},{text:"En quelle année a eu lieu la Révolution française ?",answers:["1789","1776","1815","1799"],correct:0,time:20,points:1000}];
-  renderQList();document.getElementById('quizTitle').value='Quiz Culture Générale';toast('🎲 Démo chargée !');
+  qs=[
+    {type:'qcm',text:'Quelle est la capitale de la France ?',answers:['Paris','Lyon','Marseille','Bordeaux'],correct:0,time:20,points:1000},
+    {type:'tf',text:'La Tour Eiffel a été construite en 1889.',correct:true,time:15,points:500},
+    {type:'open',text:'Citez deux causes de la Révolution française.',time:45,points:0},
+    {type:'order',text:'Remettez ces événements dans l\'ordre chronologique',items:['Prise de la Bastille','Déclaration des droits de l\'Homme','Exécution de Louis XVI','Nuit du 4 août'],time:40,points:1000},
+    {type:'blank',text:'La [Révolution] française a eu lieu en [1789] sous le règne de [Louis XVI].',blanks:['Révolution','1789','Louis XVI'],time:30,points:1000},
+  ];
+  renderQList();document.getElementById('quizTitle').value='Quiz Histoire';toast('🎲 Démo chargée !');
 };
 
+// ── LOBBY ──
 window.startLobby=async function(){
   const code=Math.floor(100000+Math.random()*900000).toString();
   players={};answers_q={};qIdx=-1;
@@ -266,15 +448,14 @@ window.startLobby=async function(){
   unsubP=onValue(ref(db,'sessions/'+code+'/players'),snap=>{players=snap.val()||{};renderPlayers();});
   toast('🎯 Session créée ! Code : '+code);
 };
-window.copyLink=function(){
-  navigator.clipboard.writeText(window._sUrl||'').then(()=>toast('📋 Lien copié !')).catch(()=>toast('Code : '+document.getElementById('scode').textContent));
-};
+window.copyLink=function(){navigator.clipboard.writeText(window._sUrl||'').then(()=>toast('📋 Lien copié !')).catch(()=>toast('Code : '+document.getElementById('scode').textContent));};
 function renderPlayers(){
   const ns=Object.keys(players);
   document.getElementById('pcnt').textContent=ns.length;
   document.getElementById('pgrid').innerHTML=ns.map(n=>`<div class="pchip">${players[n].icon||'🎯'} ${n}</div>`).join('');
 }
 
+// ── QUIZ ──
 window.startQuiz=function(){qIdx=-1;nextQ();};
 window.nextQ=async function(){
   qIdx++;if(qIdx>=qs.length){showFinal();return;}
@@ -285,80 +466,151 @@ window.nextQ=async function(){
   document.getElementById('qtxt').textContent=q.text;
   document.getElementById('tplayers').textContent=Object.keys(players).length;
   document.getElementById('acnt').textContent=0;
-  document.getElementById('adsp').innerHTML=q.answers.map((a,i)=>`<div class="atile ${CLS[i]}" id="tile${i}"><span style="font-size:1.4rem">${ICN[i]}</span><div><div>${a}</div><div class="rbar"><div class="rfill" id="bar${i}" style="width:0%"></div></div><div class="cnt" id="cnt${i}">0</div></div></div>`).join('');
+
+  // Render answer area by type
+  const adsp=document.getElementById('adsp');
+  if(q.type==='qcm'){
+    adsp.className='adsp';
+    adsp.innerHTML=q.answers.map((a,i)=>`<div class="atile ${CLS[i]}" id="tile${i}"><span style="font-size:1.4rem">${ICN[i]}</span><div><div>${a}</div><div class="rbar"><div class="rfill" id="bar${i}" style="width:0%"></div></div><div class="cnt" id="cnt${i}">0</div></div></div>`).join('');
+  } else if(q.type==='tf'){
+    adsp.className='adsp';
+    adsp.innerHTML=`
+      <div class="atile ac" id="tile0"><span style="font-size:1.8rem">✅</span><div><div>Vrai</div><div class="rbar"><div class="rfill" id="bar0" style="width:0%"></div></div><div class="cnt" id="cnt0">0</div></div></div>
+      <div class="atile aa" id="tile1"><span style="font-size:1.8rem">❌</span><div><div>Faux</div><div class="rbar"><div class="rfill" id="bar1" style="width:0%"></div></div><div class="cnt" id="cnt1">0</div></div></div>`;
+  } else if(q.type==='open'){
+    adsp.className='';
+    adsp.innerHTML=`<div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:20px"><div style="color:var(--mu);font-size:.85rem;margin-bottom:12px">Réponses en direct :</div><div class="open-answers" id="open-answers-list"><div style="color:var(--mu);font-size:.9rem;text-align:center;padding:20px">En attente des réponses…</div></div></div>`;
+  } else if(q.type==='order'){
+    const shuffled=[...q.items].sort(()=>Math.random()-.5);
+    adsp.className='';
+    adsp.innerHTML=`<div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:20px"><div style="color:var(--mu);font-size:.85rem;margin-bottom:12px">Les étudiants remettent ces éléments dans l'ordre :</div>${shuffled.map((it,i)=>`<div style="background:var(--surface);border:1px solid var(--br);border-radius:10px;padding:12px 16px;margin-bottom:8px;font-weight:700">${i+1}. ${it}</div>`).join('')}<div style="color:var(--mu);font-size:.8rem;margin-top:8px">Bon ordre : ${q.items.map((it,i)=>`<strong>${i+1}. ${it}</strong>`).join(' → ')}</div></div>`;
+  } else if(q.type==='blank'){
+    const display=q.text.replace(/\[([^\]]+)\]/g,'<span style="background:var(--a2);color:#000;padding:2px 10px;border-radius:8px;margin:0 4px">___</span>');
+    adsp.className='';
+    adsp.innerHTML=`<div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:24px;font-size:1.2rem;font-weight:700;line-height:2;text-align:center">${display}</div><div style="color:var(--mu);font-size:.8rem;margin-top:8px;text-align:center">Mots à trouver : ${q.blanks.join(', ')}</div>`;
+  }
+
   showSec('sQuestion');startTimer();
   if(unsubA)unsubA();
-  unsubA=onValue(ref(db,'sessions/'+window._sCode+'/answers'),snap=>{answers_q=snap.val()||{};updateABar();});
+  unsubA=onValue(ref(db,'sessions/'+window._sCode+'/answers'),snap=>{
+    answers_q=snap.val()||{};
+    updateABar();
+    if(q.type==='open')renderOpenAnswers();
+  });
 };
+
 function startTimer(){
   clearInterval(timerIv);const q=qs[qIdx],tot=q.time,C=201;
   upTUI();
   timerIv=setInterval(()=>{tLeft--;upTUI();if(tLeft<=0){clearInterval(timerIv);update(sRef,{phase:'timeout'});revealAnswer();}},1000);
-  function upTUI(){
-    document.getElementById('tnum').textContent=tLeft;
-    const p=tLeft/tot;
-    document.getElementById('tarc').style.strokeDashoffset=C*(1-p);
-    document.getElementById('tarc').style.stroke=tLeft<=5?'var(--rd)':tLeft<=10?'var(--a2)':'var(--a1)';
-  }
+  function upTUI(){document.getElementById('tnum').textContent=tLeft;const p=tLeft/tot;document.getElementById('tarc').style.strokeDashoffset=C*(1-p);document.getElementById('tarc').style.stroke=tLeft<=5?'var(--rd)':tLeft<=10?'var(--a2)':'var(--a1)';}
 }
+
 function updateABar(){
   const tot=Math.max(1,Object.keys(players).length),ans=Object.keys(answers_q).length,pct=Math.round(ans/tot*100);
   document.getElementById('afill').style.width=pct+'%';
   document.getElementById('apct').textContent=pct+'%';
   document.getElementById('acnt').textContent=ans;
   const q=qs[qIdx];if(!q)return;
-  q.answers.forEach((_,i)=>{
-    const c=Object.values(answers_q).filter(a=>a.answer===i).length,p=Math.round(c/tot*100);
-    const b=document.getElementById('bar'+i),cn=document.getElementById('cnt'+i);
-    if(b)b.style.width=p+'%';if(cn)cn.textContent=c+' rép.';
-  });
+  if(q.type==='qcm'){
+    q.answers.forEach((_,i)=>{const c=Object.values(answers_q).filter(a=>a.answer===i).length,p=Math.round(c/tot*100);const b=document.getElementById('bar'+i),cn=document.getElementById('cnt'+i);if(b)b.style.width=p+'%';if(cn)cn.textContent=c+' rép.';});
+  } else if(q.type==='tf'){
+    ['true','false'].forEach((v,i)=>{const c=Object.values(answers_q).filter(a=>a.answer===v).length,p=Math.round(c/tot*100);const b=document.getElementById('bar'+i),cn=document.getElementById('cnt'+i);if(b)b.style.width=p+'%';if(cn)cn.textContent=c+' rép.';});
+  }
 }
+
+function renderOpenAnswers(){
+  const el=document.getElementById('open-answers-list');if(!el)return;
+  const entries=Object.entries(answers_q);
+  if(entries.length===0){el.innerHTML='<div style="color:var(--mu);font-size:.9rem;text-align:center;padding:20px">En attente des réponses…</div>';return;}
+  el.innerHTML=entries.map(([name,data])=>`<div class="open-ans-item"><div><div class="open-ans-name">${players[name]?.icon||'🎯'} ${name}</div><div class="open-ans-text">${data.answer||''}</div></div></div>`).join('');
+}
+
 window.revealAnswer=async function(){
   clearInterval(timerIv);const q=qs[qIdx];
   const upd={};
+  // Score by type
   Object.entries(answers_q).forEach(([name,data])=>{
     const cur=players[name]?.score||0;
-    if(data.answer===q.correct){
-      const bonus=Math.round(q.points*(0.5+0.5*(data.timeLeft/q.time)));
-      upd['sessions/'+window._sCode+'/players/'+name+'/score']=cur+bonus;
-      upd['sessions/'+window._sCode+'/players/'+name+'/lastPoints']=bonus;
-    }else{upd['sessions/'+window._sCode+'/players/'+name+'/lastPoints']=0;}
+    let bonus=0;
+    if(q.type==='qcm'&&data.answer===q.correct){bonus=Math.round(q.points*(0.5+0.5*(data.timeLeft/q.time)));}
+    else if(q.type==='tf'&&data.answer===(q.correct?'true':'false')){bonus=Math.round(q.points*(0.5+0.5*(data.timeLeft/q.time)));}
+    else if(q.type==='order'){
+      // Score based on how many items are in the right position
+      const studentOrder=data.answer||[];
+      let correct=0;
+      studentOrder.forEach((item,i)=>{if(item===q.items[i])correct++;});
+      bonus=Math.round(q.points*(correct/q.items.length)*(0.5+0.5*(data.timeLeft/q.time)));
+    } else if(q.type==='blank'){
+      const studentBlanks=data.answer||[];
+      let correct=0;
+      q.blanks.forEach((b,i)=>{if((studentBlanks[i]||'').toLowerCase().trim()===b.toLowerCase().trim())correct++;});
+      bonus=Math.round(q.points*(correct/q.blanks.length)*(0.5+0.5*(data.timeLeft/q.time)));
+    }
+    if(bonus>0){upd['sessions/'+window._sCode+'/players/'+name+'/score']=cur+bonus;upd['sessions/'+window._sCode+'/players/'+name+'/lastPoints']=bonus;}
+    else{upd['sessions/'+window._sCode+'/players/'+name+'/lastPoints']=0;}
   });
   upd['sessions/'+window._sCode+'/phase']='reveal';
-  upd['sessions/'+window._sCode+'/correct']=q.correct;
-  await update(ref(db,'/'),upd);
+  upd['sessions/'+window._sCode+'/correct']=q.type==='tf'?String(q.correct):q.correct;
+  if(Object.keys(upd).length>0)await update(ref(db,'/'),upd);
   const snap=await get(ref(db,'sessions/'+window._sCode+'/players'));players=snap.val()||{};
+
   document.getElementById('rqtxt').textContent=q.text;
   const tot=Math.max(1,Object.keys(players).length);
-  document.getElementById('radsp').innerHTML=q.answers.map((a,i)=>{
-    const c=Object.values(answers_q).filter(x=>x.answer===i).length,p=Math.round(c/tot*100),isC=i===q.correct;
-    return `<div class="atile ${CLS[i]} ${isC?'ok':'wr'}"><span style="font-size:1.5rem">${isC?'✅':ICN[i]}</span><div style="flex:1"><div>${a}</div><div class="rbar"><div class="rfill" style="width:${p}%"></div></div><div class="cnt">${c} rép. (${p}%)</div></div></div>`;
-  }).join('');
-  const cor=Object.values(answers_q).filter(a=>a.answer===q.correct).length;
-  const wr=Object.keys(answers_q).length-cor;
-  const na=Object.keys(players).length-Object.keys(answers_q).length;
-  document.getElementById('rstats').innerHTML=`<div class="rst"><div class="rn" style="color:var(--gr)">${cor}</div><div class="rl">Bonnes</div></div><div class="rst"><div class="rn" style="color:var(--rd)">${wr}</div><div class="rl">Mauvaises</div></div><div class="rst"><div class="rn" style="color:var(--mu)">${na}</div><div class="rl">Sans réponse</div></div><div class="rst"><div class="rn" style="color:var(--a2)">${Math.round(cor/Math.max(1,Object.keys(players).length)*100)}%</div><div class="rl">Réussite</div></div>`;
+  const radsp=document.getElementById('radsp');
+
+  if(q.type==='qcm'){
+    radsp.className='adsp';
+    radsp.innerHTML=q.answers.map((a,i)=>{const c=Object.values(answers_q).filter(x=>x.answer===i).length,p=Math.round(c/tot*100),isC=i===q.correct;return`<div class="atile ${CLS[i]} ${isC?'ok':'wr'}"><span style="font-size:1.5rem">${isC?'✅':ICN[i]}</span><div style="flex:1"><div>${a}</div><div class="rbar"><div class="rfill" style="width:${p}%"></div></div><div class="cnt">${c} rép. (${p}%)</div></div></div>`;}).join('');
+  } else if(q.type==='tf'){
+    const trueC=Object.values(answers_q).filter(a=>a.answer==='true').length;
+    const falseC=Object.values(answers_q).filter(a=>a.answer==='false').length;
+    const trueP=Math.round(trueC/tot*100),falseP=Math.round(falseC/tot*100);
+    radsp.className='adsp';
+    radsp.innerHTML=`
+      <div class="atile ac ${q.correct?'ok':'wr'}"><span style="font-size:1.8rem">${q.correct?'✅':'✅'}</span><div style="flex:1"><div>Vrai ${q.correct?'✓':''}</div><div class="rbar"><div class="rfill" style="width:${trueP}%"></div></div><div class="cnt">${trueC} rép. (${trueP}%)</div></div></div>
+      <div class="atile aa ${!q.correct?'ok':'wr'}"><span style="font-size:1.8rem">❌</span><div style="flex:1"><div>Faux ${!q.correct?'✓':''}</div><div class="rbar"><div class="rfill" style="width:${falseP}%"></div></div><div class="cnt">${falseC} rép. (${falseP}%)</div></div></div>`;
+  } else if(q.type==='open'){
+    radsp.className='';
+    const entries=Object.entries(answers_q);
+    radsp.innerHTML=`<div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:20px"><div style="font-family:Bangers,cursive;font-size:1.2rem;color:var(--a3);margin-bottom:12px">📝 Toutes les réponses (${entries.length})</div><div class="open-answers">${entries.map(([name,data])=>`<div class="open-ans-item"><div><div class="open-ans-name">${players[name]?.icon||'🎯'} ${name}</div><div class="open-ans-text">${data.answer||'(pas de réponse)'}</div></div></div>`).join('')}</div></div>`;
+  } else if(q.type==='order'){
+    radsp.className='';
+    // Show correct order and how many got it right
+    const correct_count=Object.values(answers_q).filter(data=>{const s=data.answer||[];return q.items.every((item,i)=>s[i]===item);}).length;
+    radsp.innerHTML=`<div class="order-reveal"><div style="font-family:Bangers,cursive;font-size:1.2rem;color:var(--a2);margin-bottom:8px">Bon ordre :</div>${q.items.map((item,i)=>`<div class="order-tile ok"><div class="order-num">${i+1}</div><div>${item}</div></div>`).join('')}</div>`;
+  } else if(q.type==='blank'){
+    const display=q.text.replace(/\[([^\]]+)\]/g,'<span class="blank-word">$1</span>');
+    radsp.className='';
+    radsp.innerHTML=`<div class="blank-reveal">${display}</div>`;
+  }
+
+  const answered=Object.keys(answers_q).length;
+  const correct_count=q.type==='open'?0:Object.values(answers_q).filter(data=>{
+    if(q.type==='qcm')return data.answer===q.correct;
+    if(q.type==='tf')return data.answer===(q.correct?'true':'false');
+    return false;
+  }).length;
+  const na=Object.keys(players).length-answered;
+  document.getElementById('rstats').innerHTML=`
+    <div class="rst"><div class="rn" style="color:var(--gr)">${q.type==='open'?answered:correct_count}</div><div class="rl">${q.type==='open'?'Réponses':'Bonnes'}</div></div>
+    <div class="rst"><div class="rn" style="color:var(--rd)">${q.type==='open'?'—':answered-correct_count}</div><div class="rl">Mauvaises</div></div>
+    <div class="rst"><div class="rn" style="color:var(--mu)">${na}</div><div class="rl">Sans réponse</div></div>
+    <div class="rst"><div class="rn" style="color:var(--a2)">${q.type==='open'?'—':Math.round(correct_count/Math.max(1,Object.keys(players).length)*100)+'%'}</div><div class="rl">Réussite</div></div>`;
   showSec('sReveal');
 };
+
 window.showLeaderboard=async function(isFinal){
   const snap=await get(ref(db,'sessions/'+window._sCode+'/players'));players=snap.val()||{};
   const sorted=Object.entries(players).sort((a,b)=>(b[1].score||0)-(a[1].score||0));
   await update(sRef,{phase:isFinal?'final':'leaderboard',leaderboard:sorted.map(([n,p])=>({name:n,score:p.score||0,icon:p.icon||'🎯'}))});
   const medals=['🥇','🥈','🥉'],szC=['p1','p2','p3'],top3=sorted.slice(0,3),ord=top3.length>=2?[1,0,2]:[0];
   const pId=isFinal?'fpod':'pod';
-  document.getElementById(pId).innerHTML=ord.filter(i=>i<top3.length).map(i=>{
-    const[n,p]=top3[i];
-    return `<div class="pi"><div class="pnm">${p.icon||'🎯'} ${n}</div><div class="psc">${(p.score||0).toLocaleString()}</div><div class="pst ${szC[i]}"><div class="pm">${medals[i]}</div></div></div>`;
-  }).join('');
+  document.getElementById(pId).innerHTML=ord.filter(i=>i<top3.length).map(i=>{const[n,p]=top3[i];return`<div class="pi"><div class="pnm">${p.icon||'🎯'} ${n}</div><div class="psc">${(p.score||0).toLocaleString()}</div><div class="pst ${szC[i]}"><div class="pm">${medals[i]}</div></div></div>`;}).join('');
   const lId=isFinal?'fList':'lbList';
   document.getElementById(lId).innerHTML=sorted.slice(0,30).map(([n,p],i)=>`<div class="lr"><div class="lrk">${i+1}</div><div>${p.icon||'🎯'}</div><div class="lrn">${n}</div><div class="lrd">${(p.lastPoints||0)>0?'+'+(p.lastPoints).toLocaleString():''}</div><div class="lrs">${(p.score||0).toLocaleString()}</div></div>`).join('');
-  if(!isFinal){
-    const isL=qIdx>=qs.length-1;
-    const btn=document.getElementById('lbNext');
-    btn.textContent=isL?'🎉 Terminer':'▶ Question '+(qIdx+2);
-    btn.onclick=isL?showFinal:nextQ;
-    showSec('sLeaderboard');
-  }else{showSec('sFinal');confetti();}
+  if(!isFinal){const isL=qIdx>=qs.length-1;const btn=document.getElementById('lbNext');btn.textContent=isL?'🎉 Terminer':'▶ Question '+(qIdx+2);btn.onclick=isL?showFinal:nextQ;showSec('sLeaderboard');}
+  else{showSec('sFinal');confetti();}
 };
 function showFinal(){window.showLeaderboard(true);}
 window.resetSession=async function(){if(sRef)await remove(sRef);location.reload();};
