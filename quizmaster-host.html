@@ -126,6 +126,19 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
 @keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 .flex{display:flex;gap:10px;align-items:center}.mt{margin-top:14px}
 .rgpd{font-size:.76rem;color:var(--mu);border:1px solid var(--br);border-radius:8px;padding:9px 13px;margin-top:10px}
+.saved-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:280px;overflow-y:auto}
+.saved-item{background:var(--surface);border:1px solid var(--br);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.saved-item .si-info{flex:1}
+.saved-item .si-title{font-weight:900;font-size:.95rem}
+.saved-item .si-meta{font-size:.78rem;color:var(--mu);margin-top:2px}
+.saved-item .si-btns{display:flex;gap:6px;flex-shrink:0}
+.si-btn{border:none;border-radius:8px;padding:6px 12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:transform .1s}
+.si-btn:hover{transform:translateY(-1px)}
+.si-load{background:var(--a3);color:#000}.si-export{background:var(--card);color:var(--tx);border:1px solid var(--br)}.si-del{background:rgba(255,77,109,.15);color:var(--rd);border:1px solid rgba(255,77,109,.3)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:28px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto}
+.modal-box h3{font-family:'Bangers',cursive;font-size:1.6rem;color:var(--a2);margin-bottom:16px}
+.empty-state{text-align:center;color:var(--mu);padding:28px;font-size:.9rem}
 .rgpd span{color:var(--a3);font-weight:700}
 @media(max-width:768px){main{padding:14px}.lgrid,.agrid,.adsp,.rgrid{grid-template-columns:1fr}h1{font-size:2rem}.cbig{font-size:3rem}.pst{width:80px}}
 </style>
@@ -232,6 +245,21 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
   <div class="rgpd">🔒 <span>RGPD</span> — Données hébergées sur votre Firebase personnel en Europe. Pseudonymes supprimés en fin de session.</div>
   <div class="brow">
     <button class="btn bg bb" onclick="startLobby()" id="startBtn" disabled>🚀 Lancer la session</button>
+    <button class="btn bs" onclick="saveQuiz()">💾 Sauvegarder</button>
+    <button class="btn bs" onclick="openLoadModal()">📂 Mes quiz</button>
+    <button class="btn bs" onclick="importQuiz()">⬆️ Importer JSON</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+</div>
+
+<!-- LOAD MODAL -->
+<div class="modal-overlay" id="loadModal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <h3>📂 Mes quiz sauvegardés</h3>
+    <div class="saved-list" id="savedList"></div>
+    <div class="brow" style="margin-top:16px">
+      <button class="btn bs" onclick="closeModal()" style="flex:1">✕ Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -618,6 +646,95 @@ function showFinal(){window.showLeaderboard(true);}
 window.resetSession=async function(){if(sRef)await remove(sRef);location.reload();};
 window.showSec=function(id){document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);};
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+// ── SAVE / LOAD ──
+window.saveQuiz=function(){
+  if(qs.length===0){toast('⚠️ Aucune question à sauvegarder !');return;}
+  const title=document.getElementById('quizTitle').value||'Quiz sans titre';
+  const saved=JSON.parse(localStorage.getItem('qm_quizzes')||'[]');
+  const entry={id:Date.now(),title,questions:qs,savedAt:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})};
+  // Update if same title exists, else push
+  const existingIdx=saved.findIndex(s=>s.title===title);
+  if(existingIdx>=0){if(!confirm(`Un quiz "${title}" existe déjà. Écraser ?`))return;saved[existingIdx]=entry;}
+  else saved.push(entry);
+  localStorage.setItem('qm_quizzes',JSON.stringify(saved));
+  toast('💾 Quiz "'+title+'" sauvegardé !');
+};
+
+window.openLoadModal=function(){
+  renderSavedList();
+  document.getElementById('loadModal').style.display='flex';
+};
+window.closeModal=function(){document.getElementById('loadModal').style.display='none';};
+
+function renderSavedList(){
+  const saved=JSON.parse(localStorage.getItem('qm_quizzes')||'[]');
+  const el=document.getElementById('savedList');
+  if(saved.length===0){el.innerHTML='<div class="empty-state">Aucun quiz sauvegardé.<br>Créez un quiz et cliquez 💾 Sauvegarder.</div>';return;}
+  el.innerHTML=[...saved].reverse().map(s=>`
+    <div class="saved-item">
+      <div class="si-info">
+        <div class="si-title">${s.title}</div>
+        <div class="si-meta">${s.questions.length} question${s.questions.length>1?'s':''} · Sauvegardé le ${s.savedAt}</div>
+      </div>
+      <div class="si-btns">
+        <button class="si-btn si-load" onclick="loadQuiz(${s.id})">📂 Charger</button>
+        <button class="si-btn si-export" onclick="exportQuiz(${s.id})">⬇️ JSON</button>
+        <button class="si-btn si-del" onclick="deleteQuiz(${s.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+window.loadQuiz=function(id){
+  const saved=JSON.parse(localStorage.getItem('qm_quizzes')||'[]');
+  const entry=saved.find(s=>s.id===id);
+  if(!entry)return;
+  if(qs.length>0&&!confirm('Remplacer le quiz actuel par "'+entry.title+'" ?'))return;
+  qs=entry.questions;
+  document.getElementById('quizTitle').value=entry.title;
+  renderQList();
+  closeModal();
+  toast('✅ Quiz "'+entry.title+'" chargé !');
+};
+
+window.deleteQuiz=function(id){
+  const saved=JSON.parse(localStorage.getItem('qm_quizzes')||'[]');
+  const entry=saved.find(s=>s.id===id);
+  if(!entry||!confirm('Supprimer "'+entry.title+'" ?'))return;
+  localStorage.setItem('qm_quizzes',JSON.stringify(saved.filter(s=>s.id!==id)));
+  renderSavedList();
+  toast('🗑️ Quiz supprimé.');
+};
+
+window.exportQuiz=function(id){
+  const saved=JSON.parse(localStorage.getItem('qm_quizzes')||'[]');
+  const entry=saved.find(s=>s.id===id);
+  if(!entry)return;
+  const blob=new Blob([JSON.stringify(entry,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=entry.title.replace(/[^a-z0-9]/gi,'_')+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('⬇️ Fichier JSON téléchargé !');
+};
+
+window.importQuiz=function(){document.getElementById('importFile').click();};
+window.handleImport=function(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.questions||!Array.isArray(data.questions))throw new Error('Format invalide');
+      if(qs.length>0&&!confirm('Remplacer le quiz actuel par "'+data.title+'" ?')){e.target.value='';return;}
+      qs=data.questions;
+      document.getElementById('quizTitle').value=data.title||'Quiz importé';
+      renderQList();
+      toast('✅ Quiz importé : '+data.questions.length+' questions !');
+    }catch(err){toast('❌ Fichier invalide : '+err.message);}
+    e.target.value='';
+  };
+  reader.readAsText(file);
+};
+
 function confetti(){const c=document.getElementById('cc'),cols=['#ff6b35','#f7c948','#4ecdc4','#a78bfa','#ff4d6d','#22d3a5','#3b82f6'];for(let i=0;i<120;i++){const el=document.createElement('div');el.className='confetti-p';el.style.cssText=`left:${Math.random()*100}%;background:${cols[~~(Math.random()*cols.length)]};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*1.5}s;border-radius:${Math.random()>.5?'50%':'2px'};width:${6+~~(Math.random()*10)}px;height:${8+~~(Math.random()*12)}px;`;c.appendChild(el);setTimeout(()=>el.remove(),5000);}}
 </script>
 </body>
