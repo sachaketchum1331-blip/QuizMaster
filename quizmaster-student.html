@@ -201,20 +201,17 @@ const FB_CONFIG={"apiKey":"AIzaSyA7DroEY-eWANwAsKP88kHan7Z6S5f7McQ","authDomain"
 const app=initializeApp(FB_CONFIG,'student_'+Date.now());
 const db=getDatabase(app);
 
-// Test Firebase connectivity on load — surfaces expired rules clearly
-get(ref(db,'.info/connected')).catch(err=>{
-  console.error('Firebase connection error:',err);
-}).then(()=>{
-  // Also check DB rules by reading a test path
+// Test Firebase connectivity — deferred to not block module init
+setTimeout(()=>{
   get(ref(db,'_ping')).catch(err=>{
-    if(err.code==='PERMISSION_DENIED'){
+    if(err&&(err.code==='PERMISSION_DENIED'||err.message?.includes('permission'))){
       const banner=document.createElement('div');
       banner.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff4d6d;color:#fff;font-weight:900;text-align:center;padding:14px;z-index:9999;font-family:Nunito,sans-serif;font-size:.95rem';
-      banner.innerHTML='⚠️ La base Firebase est inaccessible (règles expirées ?). <a href="https://console.firebase.google.com" target="_blank" style="color:#fff;text-decoration:underline">Vérifier Firebase →</a>';
+      banner.innerHTML='⚠️ Firebase inaccessible (règles expirées ?). <a href="https://console.firebase.google.com" target="_blank" style="color:#fff;text-decoration:underline">Vérifier →</a>';
       document.body.appendChild(banner);
     }
   });
-});
+},1000);
 
 let myName='',myIcon='',myScore=0,myAns=null,answerLocked=false,curQ=null,tIv=null,tLeft=0,unsubS=null,sCode='';
 let dragSrc=null,orderArr=[];
@@ -223,31 +220,45 @@ const CLS=['a','b','c','d'],ICNS=['▲','●','◆','⬟'];
 const GOODS=['EXCELLENT !','BRAVO !','TOP !','PARFAIT !'],BADS=['RATÉ !','OUPS…','PRESQUE !','DOMMAGE !'];
 const TYPE_NAMES={qcm:'QCM',tf:'Vrai / Faux',open:'Ouverte',order:'Ordre',blank:'Texte à trous'};
 
-const urlCode=new URLSearchParams(window.location.search).get('code');
-if(urlCode)document.getElementById('codeIn').value=urlCode;
+// Pre-fill code from URL (safe — DOM already loaded when module runs)
+window.addEventListener('DOMContentLoaded',()=>{
+  const urlCode=new URLSearchParams(window.location.search).get('code');
+  if(urlCode){
+    const el=document.getElementById('codeIn');
+    if(el)el.value=urlCode;
+  }
+});
 
-// Auto-reconnect if session was active
-(async()=>{
-  const saved=sessionStorage.getItem('qm_session');
-  if(!saved)return;
-  const {code,name,icon}=JSON.parse(saved);
-  const snap=await get(ref(db,'sessions/'+code)).catch(()=>null);
-  if(!snap||!snap.exists()){sessionStorage.removeItem('qm_session');return;}
-  const d=snap.val();
-  if(d.phase==='final'){sessionStorage.removeItem('qm_session');return;}
-  // Restore session
-  myName=name;myIcon=icon;sCode=code;myAns=null;
-  answerLocked=(d.phase==='locked'||d.phase==='reveal'||d.phase==='leaderboard');
-  // Restore score from Firebase
-  const playerSnap=await get(ref(db,'sessions/'+code+'/players/'+name)).catch(()=>null);
-  if(playerSnap&&playerSnap.exists())myScore=playerSnap.val().score||0;
-  document.getElementById('av').textContent=icon;
-  document.getElementById('nd').textContent=name;
-  document.getElementById('cd').textContent=code;
-  document.getElementById('stitle').textContent=d.title||'Quiz';
-  toast('🔄 Reconnexion à la session en cours…');
-  showSec('sWait');listen();
-})();
+// Auto-reconnect — runs after DOM is ready
+window.addEventListener('DOMContentLoaded',async()=>{
+  try{
+    const saved=sessionStorage.getItem('qm_session');
+    if(!saved)return;
+    let parsed;
+    try{parsed=JSON.parse(saved);}catch(e){sessionStorage.removeItem('qm_session');return;}
+    const {code,name,icon}=parsed;
+    if(!code||!name){sessionStorage.removeItem('qm_session');return;}
+    const snap=await get(ref(db,'sessions/'+code)).catch(()=>null);
+    if(!snap||!snap.exists()){sessionStorage.removeItem('qm_session');return;}
+    const d=snap.val();
+    if(d.phase==='final'){sessionStorage.removeItem('qm_session');return;}
+    // Restore session
+    myName=name;myIcon=icon;sCode=code;myAns=null;
+    answerLocked=(d.phase==='locked'||d.phase==='reveal'||d.phase==='leaderboard');
+    // Restore score from Firebase
+    const playerSnap=await get(ref(db,'sessions/'+code+'/players/'+name)).catch(()=>null);
+    if(playerSnap&&playerSnap.exists())myScore=playerSnap.val().score||0;
+    document.getElementById('av').textContent=icon;
+    document.getElementById('nd').textContent=name;
+    document.getElementById('cd').textContent=code;
+    document.getElementById('stitle').textContent=d.title||'Quiz';
+    toast('🔄 Reconnexion à la session en cours…');
+    showSec('sWait');listen();
+  }catch(e){
+    console.error('Auto-reconnect failed:',e);
+    sessionStorage.removeItem('qm_session');
+  }
+});
 
 window.joinSession=async function(){
   const code=document.getElementById('codeIn').value.trim();
