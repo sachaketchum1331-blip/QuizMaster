@@ -386,7 +386,7 @@ function startClientTimer(duration, startedAt){
 
 function showLockedFeedback(){
   // Show the locked waiting screen
-  const msg = myAns!==null ? 'Votre réponse a bien été enregistrée !' : 'Vous n'avez pas répondu à temps.';
+  const msg = myAns!==null ? 'Votre réponse a bien été enregistrée !' : "Vous n'avez pas répondu à temps.";
   const el = document.getElementById('locked-msg');
   if(el) el.textContent = msg;
   showSec('sLockedWait');
