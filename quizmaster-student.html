@@ -201,6 +201,21 @@ const FB_CONFIG={"apiKey":"AIzaSyA7DroEY-eWANwAsKP88kHan7Z6S5f7McQ","authDomain"
 const app=initializeApp(FB_CONFIG,'student_'+Date.now());
 const db=getDatabase(app);
 
+// Test Firebase connectivity on load — surfaces expired rules clearly
+get(ref(db,'.info/connected')).catch(err=>{
+  console.error('Firebase connection error:',err);
+}).then(()=>{
+  // Also check DB rules by reading a test path
+  get(ref(db,'_ping')).catch(err=>{
+    if(err.code==='PERMISSION_DENIED'){
+      const banner=document.createElement('div');
+      banner.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff4d6d;color:#fff;font-weight:900;text-align:center;padding:14px;z-index:9999;font-family:Nunito,sans-serif;font-size:.95rem';
+      banner.innerHTML='⚠️ La base Firebase est inaccessible (règles expirées ?). <a href="https://console.firebase.google.com" target="_blank" style="color:#fff;text-decoration:underline">Vérifier Firebase →</a>';
+      document.body.appendChild(banner);
+    }
+  });
+});
+
 let myName='',myIcon='',myScore=0,myAns=null,answerLocked=false,curQ=null,tIv=null,tLeft=0,unsubS=null,sCode='';
 let dragSrc=null,orderArr=[];
 const ICONS=['🔥','⚡','🎯','🚀','💎','👑','🦄','🎸','🌟','🦊'];
@@ -220,9 +235,9 @@ if(urlCode)document.getElementById('codeIn').value=urlCode;
   if(!snap||!snap.exists()){sessionStorage.removeItem('qm_session');return;}
   const d=snap.val();
   if(d.phase==='final'){sessionStorage.removeItem('qm_session');return;}
-  if(d.phase==='locked'){answerLocked=true;}
   // Restore session
-  myName=name;myIcon=icon;sCode=code;myAns=null;answerLocked=false;
+  myName=name;myIcon=icon;sCode=code;myAns=null;
+  answerLocked=(d.phase==='locked'||d.phase==='reveal'||d.phase==='leaderboard');
   // Restore score from Firebase
   const playerSnap=await get(ref(db,'sessions/'+code+'/players/'+name)).catch(()=>null);
   if(playerSnap&&playerSnap.exists())myScore=playerSnap.val().score||0;
@@ -239,16 +254,37 @@ window.joinSession=async function(){
   const name=document.getElementById('nameIn').value.trim();
   if(!code||code.length<4){toast('⚠️ Code invalide !');return;}
   if(!name){toast('⚠️ Entrez votre pseudo !');return;}
-  const snap=await get(ref(db,'sessions/'+code));
-  if(!snap.exists()){toast('❌ Session introuvable !');return;}
-  myName=name;myIcon=ICONS[~~(Math.random()*ICONS.length)];myScore=0;myAns=null;answerLocked=false;sCode=code;
-  sessionStorage.setItem('qm_session',JSON.stringify({code,name:myName,icon:myIcon}));
-  await set(ref(db,'sessions/'+code+'/players/'+name),{icon:myIcon,score:0,lastPoints:0,joinedAt:Date.now()});
-  document.getElementById('av').textContent=myIcon;
-  document.getElementById('nd').textContent=name;
-  document.getElementById('cd').textContent=code;
-  document.getElementById('stitle').textContent=snap.val().title||'Quiz';
-  showSec('sWait');listen();
+  try{
+    const snap=await get(ref(db,'sessions/'+code));
+    if(!snap||!snap.exists()){toast('❌ Session introuvable ! Vérifiez le code.');return;}
+    const sessionData=snap.val();
+    if(sessionData.phase==='final'){toast('❌ Cette session est terminée.');return;}
+    myIcon=ICONS[~~(Math.random()*ICONS.length)];
+    myName=name;myScore=0;myAns=null;answerLocked=false;sCode=code;
+    sessionStorage.setItem('qm_session',JSON.stringify({code,name:myName,icon:myIcon}));
+    // Check if player already exists (rejoin) — preserve their score
+    const existingSnap=await get(ref(db,'sessions/'+code+'/players/'+name));
+    if(existingSnap&&existingSnap.exists()){
+      // Rejoin: keep existing score, just update icon and timestamp
+      const existing=existingSnap.val();
+      myScore=existing.score||0;
+      await set(ref(db,'sessions/'+code+'/players/'+name),{
+        icon:myIcon,score:existing.score||0,lastPoints:existing.lastPoints||0,joinedAt:existing.joinedAt||Date.now()
+      });
+    } else {
+      // New player
+      await set(ref(db,'sessions/'+code+'/players/'+name),{icon:myIcon,score:0,lastPoints:0,joinedAt:Date.now()});
+    }
+    document.getElementById('av').textContent=myIcon;
+    document.getElementById('nd').textContent=name;
+    document.getElementById('cd').textContent=code;
+    document.getElementById('stitle').textContent=sessionData.title||'Quiz';
+    showSec('sWait');
+    listen();
+  } catch(err){
+    console.error('joinSession error:',err);
+    toast('❌ Erreur de connexion : '+err.message);
+  }
 };
 
 function listen(){
