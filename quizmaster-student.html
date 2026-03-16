@@ -48,6 +48,9 @@ textarea{resize:none;min-height:80px}
 .ab.ws{opacity:.45}.ab.wo{opacity:.22}
 .ab .ic{font-size:1.4rem;flex-shrink:0}
 .ab.a{background:var(--rd)}.ab.b{background:#3b82f6}.ab.c{background:var(--gr);color:#000}.ab.d{background:var(--a2);color:#000}
+.ab.multi-sel{box-shadow:0 0 0 4px #fff;transform:scale(1.03)}
+.multi-hint{text-align:center;color:var(--a2);font-size:.85rem;font-weight:700;margin-bottom:10px;padding:8px;background:rgba(247,201,72,.1);border-radius:10px;border:1px solid rgba(247,201,72,.3)}
+.multi-submit{margin-top:12px}
 /* TF BUTTONS */
 .tf-btns{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .tf-btn{border:none;border-radius:var(--rr);padding:28px 14px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.4rem;cursor:pointer;transition:transform .15s,box-shadow .2s;text-align:center;color:#fff}
@@ -242,7 +245,11 @@ function showQ(q,idx,tot){
   const zone=document.getElementById('answer-zone');
 
   if(q.type==='qcm'){
-    zone.innerHTML=`<div class="abts">${q.answers.map((a,i)=>`<button class="ab ${CLS[i]}" onclick="selectQCM(${i})" id="ab${i}"><span class="ic">${ICNS[i]}</span><span>${a}</span></button>`).join('')}</div>`;
+    if(q.multi){
+      zone.innerHTML=`<div class="multi-hint">☑️ Sélectionnez toutes les bonnes réponses, puis validez</div><div class="abts" id="multi-abts">${q.answers.map((a,i)=>`<button class="ab ${CLS[i]}" onclick="toggleMulti(${i})" id="ab${i}"><span class="ic">${ICNS[i]}</span><span>${a}</span></button>`).join('')}</div><button class="btn bg2 multi-submit" onclick="submitMulti()">✅ Valider mes réponses</button>`;
+    } else {
+      zone.innerHTML=`<div class="abts">${q.answers.map((a,i)=>`<button class="ab ${CLS[i]}" onclick="selectQCM(${i})" id="ab${i}"><span class="ic">${ICNS[i]}</span><span>${a}</span></button>`).join('')}</div>`;
+    }
   } else if(q.type==='tf'){
     zone.innerHTML=`<div class="tf-btns"><button class="tf-btn tf-true" onclick="selectTF('true')" id="tf-true">✅ Vrai</button><button class="tf-btn tf-false" onclick="selectTF('false')" id="tf-false">❌ Faux</button></div>`;
   } else if(q.type==='open'){
@@ -280,6 +287,21 @@ window.selectQCM=async function(i){
   document.querySelectorAll('.ab').forEach((b,j)=>{b.disabled=true;if(j!==i)b.style.opacity='.38';});
   document.getElementById('ab'+i).classList.add('sel');
   await submitAnswer(i);toast('✅ Réponse envoyée !');
+};
+window.toggleMulti=function(i){
+  if(myAns!==null)return;
+  const btn=document.getElementById('ab'+i);
+  btn.classList.toggle('multi-sel');
+};
+window.submitMulti=async function(){
+  if(myAns!==null)return;
+  const selected=[...document.querySelectorAll('#multi-abts .ab.multi-sel')].map(b=>parseInt(b.id.replace('ab','')));
+  if(selected.length===0){toast('⚠️ Sélectionnez au moins une réponse !');return;}
+  myAns=selected;
+  document.querySelectorAll('#multi-abts .ab').forEach(b=>{b.disabled=true;if(!b.classList.contains('multi-sel'))b.style.opacity='.38';});
+  document.querySelector('.multi-submit').disabled=true;
+  document.querySelector('.multi-submit').textContent='✅ Réponses envoyées !';
+  await submitAnswer(myAns);toast('✅ '+selected.length+' réponse(s) envoyée(s) !');
 };
 window.selectTF=async function(v){
   if(myAns!==null)return;myAns=v;
@@ -335,10 +357,20 @@ async function submitAnswer(answer){
 function revealA(correct,sessionData){
   const q=curQ;
   if(q.type==='qcm'){
-    document.querySelectorAll('.ab').forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add('ok');else if(i===myAns)b.classList.add('ws');else b.classList.add('wo');});
-    const isC=myAns===correct;
-    const pts=isC?Math.round(1000*(0.5+0.5*(tLeft/(q.time||20)))):0;
-    myScore+=pts;setTimeout(()=>showFeed(isC,pts,'qcm'),1400);
+    if(q.multi){
+      const corrSet=Array.isArray(correct)?correct:[correct];
+      const sel=Array.isArray(myAns)?myAns:[];
+      document.querySelectorAll('.ab').forEach((b,i)=>{b.disabled=true;b.classList.remove('multi-sel');if(corrSet.includes(i))b.classList.add('ok');else if(sel.includes(i))b.classList.add('ws');else b.classList.add('wo');});
+      const allGood=corrSet.every(c=>sel.includes(c))&&sel.every(c=>corrSet.includes(c));
+      const partial=sel.filter(c=>corrSet.includes(c)).length;
+      const pts=allGood?Math.round(q.points*(0.5+0.5*(tLeft/(q.time||20)))):partial>0?Math.round(q.points*(partial/corrSet.length)*0.5):0;
+      myScore+=pts;setTimeout(()=>showFeed(allGood,pts,'qcm',partial,corrSet.length),1400);
+    } else {
+      document.querySelectorAll('.ab').forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add('ok');else if(i===myAns)b.classList.add('ws');else b.classList.add('wo');});
+      const isC=myAns===correct;
+      const pts=isC?Math.round(1000*(0.5+0.5*(tLeft/(q.time||20)))):0;
+      myScore+=pts;setTimeout(()=>showFeed(isC,pts,'qcm'),1400);
+    }
   } else if(q.type==='tf'){
     const correctStr=String(correct);
     document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);

@@ -166,13 +166,14 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
         <div><span class="lbl">Réponse C</span><div class="ainp"><div class="let lc">C</div><input type="text" id="qcm-a2" placeholder="Réponse C (optionnel)"></div></div>
         <div><span class="lbl">Réponse D</span><div class="ainp"><div class="let ld">D</div><input type="text" id="qcm-a3" placeholder="Réponse D (optionnel)"></div></div>
       </div>
-      <div class="flex mt">
-        <span class="lbl" style="margin:0">Bonne réponse :</span>
-        <label class="cr"><input type="radio" name="qcm-cr" value="0" checked> A</label>
-        <label class="cr"><input type="radio" name="qcm-cr" value="1"> B</label>
-        <label class="cr"><input type="radio" name="qcm-cr" value="2"> C</label>
-        <label class="cr"><input type="radio" name="qcm-cr" value="3"> D</label>
+      <div class="flex mt" style="flex-wrap:wrap;gap:10px">
+        <span class="lbl" style="margin:0;width:100%">Bonne(s) réponse(s) — cochez toutes les bonnes :</span>
+        <label class="cr"><input type="checkbox" name="qcm-cr" value="0"> A</label>
+        <label class="cr"><input type="checkbox" name="qcm-cr" value="1"> B</label>
+        <label class="cr"><input type="checkbox" name="qcm-cr" value="2"> C</label>
+        <label class="cr"><input type="checkbox" name="qcm-cr" value="3"> D</label>
       </div>
+      <div style="font-size:.78rem;color:var(--mu);margin-top:6px">💡 Cochez une seule case = QCM classique · Plusieurs cases = QCM à choix multiples</div>
     </div>
 
     <!-- VRAI/FAUX -->
@@ -371,9 +372,9 @@ window.addQuestion=function(){
     if(!txt){toast('⚠️ Question vide !');return;}
     const ans=[0,1,2,3].map(i=>document.getElementById('qcm-a'+i).value.trim()).filter(Boolean);
     if(ans.length<2){toast('⚠️ Minimum 2 réponses !');return;}
-    const cor=parseInt(document.querySelector('input[name="qcm-cr"]:checked').value);
-    if(cor>=ans.length){toast('⚠️ Bonne réponse inexistante !');return;}
-    q={...q,text:txt,answers:ans,correct:cor};
+    const corChecked=[...document.querySelectorAll('input[name="qcm-cr"]:checked')].map(el=>parseInt(el.value)).filter(v=>v<ans.length);
+    if(corChecked.length===0){toast('⚠️ Cochez au moins une bonne réponse !');return;}
+    const isMulti=corChecked.length>1;q={...q,text:txt,answers:ans,correct:isMulti?corChecked:corChecked[0],multi:isMulti};
   } else if(currentType==='tf'){
     const txt=document.getElementById('tf-text').value.trim();
     if(!txt){toast('⚠️ Affirmation vide !');return;}
@@ -513,7 +514,7 @@ function updateABar(){
   document.getElementById('acnt').textContent=ans;
   const q=qs[qIdx];if(!q)return;
   if(q.type==='qcm'){
-    q.answers.forEach((_,i)=>{const c=Object.values(answers_q).filter(a=>a.answer===i).length,p=Math.round(c/tot*100);const b=document.getElementById('bar'+i),cn=document.getElementById('cnt'+i);if(b)b.style.width=p+'%';if(cn)cn.textContent=c+' rép.';});
+    q.answers.forEach((_,i)=>{const c=q.multi?Object.values(answers_q).filter(a=>Array.isArray(a.answer)&&a.answer.includes(i)).length:Object.values(answers_q).filter(a=>a.answer===i).length;const p=Math.round(c/tot*100);const b=document.getElementById('bar'+i),cn=document.getElementById('cnt'+i);if(b)b.style.width=p+'%';if(cn)cn.textContent=c+' rép.';});
   } else if(q.type==='tf'){
     ['true','false'].forEach((v,i)=>{const c=Object.values(answers_q).filter(a=>a.answer===v).length,p=Math.round(c/tot*100);const b=document.getElementById('bar'+i),cn=document.getElementById('cnt'+i);if(b)b.style.width=p+'%';if(cn)cn.textContent=c+' rép.';});
   }
@@ -533,7 +534,7 @@ window.revealAnswer=async function(){
   Object.entries(answers_q).forEach(([name,data])=>{
     const cur=players[name]?.score||0;
     let bonus=0;
-    if(q.type==='qcm'&&data.answer===q.correct){bonus=Math.round(q.points*(0.5+0.5*(data.timeLeft/q.time)));}
+    if(q.type==='qcm'){if(q.multi){const sel=Array.isArray(data.answer)?data.answer:[];const correctSet=q.correct;const allGood=correctSet.every(c=>sel.includes(c))&&sel.every(c=>correctSet.includes(c));const partial=sel.filter(c=>correctSet.includes(c)).length;if(allGood)bonus=Math.round(q.points*(0.5+0.5*(data.timeLeft/q.time)));else if(partial>0)bonus=Math.round(q.points*(partial/correctSet.length)*0.5);}else{if(data.answer===q.correct)bonus=Math.round(q.points*(0.5+0.5*(data.timeLeft/q.time)));}}
     else if(q.type==='tf'&&data.answer===(q.correct?'true':'false')){bonus=Math.round(q.points*(0.5+0.5*(data.timeLeft/q.time)));}
     else if(q.type==='order'){
       // Score based on how many items are in the right position
@@ -561,7 +562,8 @@ window.revealAnswer=async function(){
 
   if(q.type==='qcm'){
     radsp.className='adsp';
-    radsp.innerHTML=q.answers.map((a,i)=>{const c=Object.values(answers_q).filter(x=>x.answer===i).length,p=Math.round(c/tot*100),isC=i===q.correct;return`<div class="atile ${CLS[i]} ${isC?'ok':'wr'}"><span style="font-size:1.5rem">${isC?'✅':ICN[i]}</span><div style="flex:1"><div>${a}</div><div class="rbar"><div class="rfill" style="width:${p}%"></div></div><div class="cnt">${c} rép. (${p}%)</div></div></div>`;}).join('');
+    const corrSet=q.multi?q.correct:[q.correct];
+    radsp.innerHTML=q.answers.map((a,i)=>{const c=q.multi?Object.values(answers_q).filter(x=>Array.isArray(x.answer)&&x.answer.includes(i)).length:Object.values(answers_q).filter(x=>x.answer===i).length;const p=Math.round(c/tot*100);const isC=corrSet.includes(i);return`<div class="atile ${CLS[i]} ${isC?'ok':'wr'}"><span style="font-size:1.5rem">${isC?'✅':ICN[i]}</span><div style="flex:1"><div>${a}${isC&&q.multi?' ✓':''}</div><div class="rbar"><div class="rfill" style="width:${p}%"></div></div><div class="cnt">${c} rép. (${p}%)</div></div></div>`;}).join('');
   } else if(q.type==='tf'){
     const trueC=Object.values(answers_q).filter(a=>a.answer==='true').length;
     const falseC=Object.values(answers_q).filter(a=>a.answer==='false').length;
@@ -587,7 +589,7 @@ window.revealAnswer=async function(){
 
   const answered=Object.keys(answers_q).length;
   const correct_count=q.type==='open'?0:Object.values(answers_q).filter(data=>{
-    if(q.type==='qcm')return data.answer===q.correct;
+    if(q.type==='qcm'){if(q.multi){const sel=Array.isArray(data.answer)?data.answer:[];return q.correct.every(c=>sel.includes(c))&&sel.every(c=>q.correct.includes(c));}return data.answer===q.correct;}
     if(q.type==='tf')return data.answer===(q.correct?'true':'false');
     return false;
   }).length;
