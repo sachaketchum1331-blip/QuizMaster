@@ -155,6 +155,15 @@ textarea{resize:none;min-height:80px}
   <div id="answer-zone"></div>
 </div>
 
+<div class="sec" id="sLockedWait">
+  <div style="text-align:center;padding:28px 0">
+    <div style="font-size:4rem;margin-bottom:16px">🔒</div>
+    <div style="font-family:'Bangers',cursive;font-size:2rem;color:var(--a2);margin-bottom:8px">Réponses verrouillées</div>
+    <div style="color:var(--mu);font-size:.95rem;margin-bottom:28px" id="locked-msg">En attente de la correction…</div>
+    <div class="wanim"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+</div>
+
 <div class="sec" id="sFeed">
   <div class="fb" id="fb">
     <div class="fe" id="fe">🎯</div>
@@ -211,6 +220,7 @@ if(urlCode)document.getElementById('codeIn').value=urlCode;
   if(!snap||!snap.exists()){sessionStorage.removeItem('qm_session');return;}
   const d=snap.val();
   if(d.phase==='final'){sessionStorage.removeItem('qm_session');return;}
+  if(d.phase==='locked'){answerLocked=true;}
   // Restore session
   myName=name;myIcon=icon;sCode=code;myAns=null;answerLocked=false;
   // Restore score from Firebase
@@ -250,10 +260,25 @@ function listen(){
     const ph=d.phase;
     if(ph==='question'&&d.questions){
       const q=d.questions[d.qIndex];
-      if(!curQ||curQ._i!==d.qIndex){curQ={...q,_i:d.qIndex};myAns=null;answerLocked=false;showQ(q,d.qIndex,d.questions.length);}
+      if(!curQ||curQ._i!==d.qIndex){
+        curQ={...q,_i:d.qIndex,_startedAt:d.startedAt||Date.now()};
+        myAns=null;answerLocked=false;
+        showQ(q,d.qIndex,d.questions.length);
+      }
     }
-    if(ph==='timeout'&&document.getElementById('sQuestion').classList.contains('on')){clearInterval(tIv);answerLocked=true;if(myAns===null)submitAnswer(null);showFeed(myAns!==null,myAns!==null?0:0,curQ?.type);}
-    if(ph==='reveal'&&d.correct!==undefined&&document.getElementById('sQuestion').classList.contains('on')){clearInterval(tIv);answerLocked=true;revealA(d.correct,d);}
+    // 'locked' = prof verrouille les réponses (timer expiré ou manuellement)
+    if(ph==='locked'&&document.getElementById('sQuestion').classList.contains('on')){
+      clearInterval(tIv);
+      answerLocked=true;
+      // Show visual lock feedback without changing screen
+      showLockedFeedback();
+    }
+    if(ph==='reveal'&&d.correct!==undefined){
+      clearInterval(tIv);answerLocked=true;
+      if(document.getElementById('sQuestion').classList.contains('on')||document.getElementById('sLockedWait').classList.contains('on')){
+        revealA(d.correct,d);
+      }
+    }
     if((ph==='leaderboard'||ph==='final')&&d.leaderboard)showLb(d.leaderboard,ph==='final');
   });
 }
@@ -285,8 +310,39 @@ function showQ(q,idx,tot){
     renderBlank(zone,q);
   }
 
-  upT();tIv=setInterval(()=>{tLeft--;upT();if(tLeft<=0)clearInterval(tIv);},1000);
+  // Server-authoritative timer: uses Firebase startedAt
+  startClientTimer(q.time, curQ._startedAt||Date.now());
   showSec('sQuestion');
+}
+
+function startClientTimer(duration, startedAt){
+  clearInterval(tIv);
+  const deadline = startedAt + duration*1000;
+  function tick(){
+    const now = Date.now();
+    tLeft = Math.max(0, Math.round((deadline - now)/1000));
+    upT();
+    // Auto-lock UI when time runs out on client side
+    // (server will also send phase:timeout which triggers full lock)
+    if(tLeft <= 0){
+      clearInterval(tIv);
+      answerLocked = true;
+      // Show locked screen locally — wait for prof to reveal
+      if(document.getElementById('sQuestion').classList.contains('on')){
+        showLockedFeedback();
+      }
+    }
+  }
+  tick();
+  tIv = setInterval(tick, 500);
+}
+
+function showLockedFeedback(){
+  // Show the locked waiting screen
+  const msg = myAns!==null ? 'Votre réponse a bien été enregistrée !' : 'Vous n'avez pas répondu à temps.';
+  const el = document.getElementById('locked-msg');
+  if(el) el.textContent = msg;
+  showSec('sLockedWait');
 }
 
 function renderOrderCards(zone){
@@ -380,7 +436,18 @@ window.submitBlanks=async function(n){
 };
 
 async function submitAnswer(answer){
-  await set(ref(db,'sessions/'+sCode+'/answers/'+myName),{answer,timeLeft:tLeft,ts:Date.now()});
+  // Double-check: verify session is still in question phase before writing
+  const snap = await get(ref(db,'sessions/'+sCode)).catch(()=>null);
+  if(!snap||!snap.exists())return;
+  const phase = snap.val().phase;
+  if((phase==='locked'||phase==='reveal'||phase==='leaderboard'||phase==='final')&&answer!==null){
+    // Too late - session moved on
+    answerLocked=true;
+    toast('⏰ Trop tard !');
+    return;
+  }
+  const safeTimeLeft=Math.max(0,tLeft);
+  await set(ref(db,'sessions/'+sCode+'/answers/'+myName),{answer,timeLeft:safeTimeLeft,ts:Date.now()});
 }
 
 // ── REVEAL ──
@@ -394,12 +461,12 @@ function revealA(correct,sessionData){
       const allGood=corrSet.every(c=>sel.includes(c))&&sel.every(c=>corrSet.includes(c));
       const partial=sel.filter(c=>corrSet.includes(c)).length;
       const pts=allGood?Math.round(q.points*(0.5+0.5*(tLeft/(q.time||20)))):partial>0?Math.round(q.points*(partial/corrSet.length)*0.5):0;
-      myScore+=pts;setTimeout(()=>showFeed(allGood,pts,'qcm',partial,corrSet.length),1400);
+      setTimeout(()=>showFeed(allGood,pts,'qcm',partial,corrSet.length),1400);
     } else {
       document.querySelectorAll('.ab').forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add('ok');else if(i===myAns)b.classList.add('ws');else b.classList.add('wo');});
       const isC=myAns===correct;
       const pts=isC?Math.round(1000*(0.5+0.5*(tLeft/(q.time||20)))):0;
-      myScore+=pts;setTimeout(()=>showFeed(isC,pts,'qcm'),1400);
+      setTimeout(()=>showFeed(isC,pts,'qcm'),1400);
     }
   } else if(q.type==='tf'){
     const correctStr=String(correct);
@@ -407,7 +474,7 @@ function revealA(correct,sessionData){
     ['true','false'].forEach(v=>{const el=document.getElementById('tf-'+v);if(!el)return;if(v===correctStr)el.classList.add('ok');else if(v===myAns)el.classList.add('ws');});
     const isC=myAns===correctStr;
     const pts=isC?Math.round(500*(0.5+0.5*(tLeft/(q.time||15)))):0;
-    myScore+=pts;setTimeout(()=>showFeed(isC,pts,'tf'),1400);
+    setTimeout(()=>showFeed(isC,pts,'tf'),1400);
   } else if(q.type==='open'){
     setTimeout(()=>showFeed(null,0,'open'),500);
   } else if(q.type==='order'){
@@ -417,7 +484,6 @@ function revealA(correct,sessionData){
     let correctCount=0;
     q.items.forEach((item,i)=>{if(studentOrder[i]===item)correctCount++;});
     const pts=myAns?Math.round(q.points*(correctCount/q.items.length)*(0.5+0.5*(tLeft/q.time))):0;
-    myScore+=pts;
     zone.innerHTML=`<div style="margin-bottom:12px;font-size:.85rem;color:var(--mu)">Bon ordre :</div>${q.items.map((item,i)=>{const ok=studentOrder[i]===item;return`<div class="order-card" style="cursor:default;border-color:${ok?'var(--gr)':'var(--rd)'};background:${ok?'rgba(34,211,165,.1)':'rgba(255,77,109,.1)'}"><div class="order-num">${i+1}</div><div>${item}</div><div style="margin-left:auto;font-size:1.2rem">${ok?'✅':'❌'}</div></div>`;}).join('')}`;
     setTimeout(()=>showFeed(correctCount===q.items.length,pts,'order',correctCount,q.items.length),1800);
   } else if(q.type==='blank'){
@@ -429,7 +495,6 @@ function revealA(correct,sessionData){
       if(el){el.classList.add(isOk?'ok':'wr');el.value=isOk?studentBlanks[i]||'':studentBlanks[i]+' ✗';el.disabled=true;}
     });
     const pts=myAns?Math.round(q.points*(correctCount/q.blanks.length)*(0.5+0.5*(tLeft/q.time))):0;
-    myScore+=pts;
     setTimeout(()=>showFeed(correctCount===q.blanks.length,pts,'blank',correctCount,q.blanks.length),1800);
   }
 }
@@ -437,37 +502,39 @@ function revealA(correct,sessionData){
 function showFeed(isC,pts,type,got,total){
   const G=['🎉','🔥','⚡','💥','🚀'],B=['😅','💀','🤦','😬'];
   const box=document.getElementById('fb');
+  // Points gained this round (display only — real total comes from Firebase)
+  const gainStr=pts>0?'+'+pts.toLocaleString()+' pts':'+0 pts';
   if(type==='open'){
     box.className='fb neutral';
     document.getElementById('fe').textContent='📝';
     document.getElementById('ftt').textContent='RÉPONSE ENVOYÉE';
     document.getElementById('fp2').textContent='Le prof évalue vos réponses';
-    document.getElementById('ftot').textContent='Total : '+myScore.toLocaleString()+' pts';
+    document.getElementById('ftot').textContent='En attente du classement…';
   } else if(type==='order'||type==='blank'){
     const allGood=isC;
     box.className='fb '+(allGood?'good':got>0?'neutral':'bad');
     document.getElementById('fe').textContent=allGood?G[~~(Math.random()*G.length)]:(got>0?'👍':B[~~(Math.random()*B.length)]);
     document.getElementById('ftt').textContent=allGood?GOODS[~~(Math.random()*GOODS.length)]:(got>0?`${got}/${total} CORRECT !`:'RATÉ !');
-    document.getElementById('fp2').textContent=pts>0?'+'+pts.toLocaleString()+' points':'+0 points';
-    document.getElementById('ftot').textContent='Total : '+myScore.toLocaleString()+' pts';
+    document.getElementById('fp2').textContent=gainStr;
+    document.getElementById('ftot').textContent='En attente du classement…';
   } else if(isC){
     box.className='fb good';
     document.getElementById('fe').textContent=G[~~(Math.random()*G.length)];
     document.getElementById('ftt').textContent=GOODS[~~(Math.random()*GOODS.length)];
-    document.getElementById('fp2').textContent='+'+pts.toLocaleString()+' points';
-    document.getElementById('ftot').textContent='Total : '+myScore.toLocaleString()+' pts';
+    document.getElementById('fp2').textContent=gainStr;
+    document.getElementById('ftot').textContent='En attente du classement…';
   } else if(myAns===null){
     box.className='fb bad';
     document.getElementById('fe').textContent='⏰';
     document.getElementById('ftt').textContent='TROP LENT !';
-    document.getElementById('fp2').textContent='+0 points';
-    document.getElementById('ftot').textContent='Total : '+myScore.toLocaleString()+' pts';
+    document.getElementById('fp2').textContent='+0 pts';
+    document.getElementById('ftot').textContent='En attente du classement…';
   } else {
     box.className='fb bad';
     document.getElementById('fe').textContent=B[~~(Math.random()*B.length)];
     document.getElementById('ftt').textContent=BADS[~~(Math.random()*BADS.length)];
-    document.getElementById('fp2').textContent='+0 points';
-    document.getElementById('ftot').textContent='Total : '+myScore.toLocaleString()+' pts';
+    document.getElementById('fp2').textContent='+0 pts';
+    document.getElementById('ftot').textContent='En attente du classement…';
   }
   showSec('sFeed');
 }
@@ -476,17 +543,20 @@ function upT(){const el=document.getElementById('td2');el.textContent='⏱ '+tLe
 
 function showLb(scores,isFinal){
   const mi=scores.findIndex(s=>s.name===myName),rk=mi+1;
+  // Always use Firebase score as source of truth
+  const firebaseScore = mi>=0 ? (scores[mi].score||0) : 0;
+  myScore = firebaseScore; // keep local cache in sync
   const medals=['🥇','🥈','🥉'],trophies=['🥇','🥈','🥉','4️⃣','5️⃣'];
   const lb=scores.slice(0,10).map((s,i)=>`<div class="mr ${s.name===myName?'me':''}"><div class="mrk">${medals[i]||i+1}</div><div>${s.icon||'🎯'}</div><div class="mrn">${s.name===myName?'👉 ':''}${s.name}</div><div class="mrs">${(s.score||0).toLocaleString()}</div></div>`).join('');
   if(isFinal){
     document.getElementById('tr').textContent=trophies[mi]||'🎖️';
     document.getElementById('fRk').textContent=rk>0?'#'+rk:'—';
-    document.getElementById('fSc').textContent=myScore.toLocaleString()+' pts';
+    document.getElementById('fSc').textContent=firebaseScore.toLocaleString()+' pts';
     document.getElementById('fmlb').innerHTML=lb;
     showSec('sFin');if(rk<=3)confetti();
   }else{
     document.getElementById('myRk').textContent=rk>0?'#'+rk:'—';
-    document.getElementById('mySc').textContent=myScore.toLocaleString()+' pts';
+    document.getElementById('mySc').textContent=firebaseScore.toLocaleString()+' pts';
     document.getElementById('mlb').innerHTML=lb;
     showSec('sLb');if(rk===1)confetti();
   }

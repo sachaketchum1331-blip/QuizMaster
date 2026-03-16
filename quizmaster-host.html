@@ -309,8 +309,9 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
     <span id="apct" style="font-family:Bangers,cursive;font-size:1.1rem;color:var(--a3)">0%</span>
   </div>
   <div id="adsp"></div>
-  <div class="brow" style="margin-top:20px">
-    <button class="btn ba bb" onclick="revealAnswer()">👁 Révéler la réponse</button>
+  <div class="brow" style="margin-top:20px" id="question-btns">
+    <button class="btn bp bb" id="btn-lock" onclick="lockAnswers()">🔒 Verrouiller les réponses</button>
+    <button class="btn ba bb" id="btn-reveal" onclick="revealAnswer()" style="display:none">👁 Révéler la réponse</button>
     <button class="btn bs" onclick="closeSession()" style="color:var(--rd);border-color:rgba(255,77,109,.3)">🔴 Terminer</button>
   </div>
 </div>
@@ -322,7 +323,8 @@ svg.tc{transform:rotate(-90deg)}svg.tc circle{transition:stroke-dashoffset .9s l
   <div id="radsp"></div>
   <div class="rgrid mt" id="rstats"></div>
   <div class="brow" style="margin-top:20px">
-    <button class="btn bp bb" onclick="showLeaderboard(false)">🏆 Voir le classement</button>
+    <button class="btn bp bb" id="btn-lb" onclick="showLeaderboard(false)">🏆 Voir le classement</button>
+    <button class="btn bs" onclick="closeSession()" style="color:var(--rd);border-color:rgba(255,77,109,.3)">🔴 Terminer le quiz</button>
   </div>
 </div>
 
@@ -392,7 +394,7 @@ let qs=[],players={},answers_q={},sRef,timerIv=null,tLeft=0,qIdx=-1,unsubA=null,
     document.getElementById('surl').textContent=sUrl;
     document.getElementById('qrw').innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data='+encodeURIComponent(sUrl)+'" alt="QR">';
     showSec('sLobby');
-  } else if(ph==='question'||ph==='timeout'){
+  } else if(ph==='question'||ph==='locked'){
     // Restore question view
     const q=qs[d.qIndex];
     if(q){
@@ -406,6 +408,13 @@ let qs=[],players={},answers_q={},sRef,timerIv=null,tLeft=0,qIdx=-1,unsubA=null,
       const CLS2=['aa','ab','ac','ad'],ICN2=['▲','●','◆','⬟'];
       if(q.type==='qcm'){adsp.className='adsp';adsp.innerHTML=q.answers.map((a,i)=>`<div class="atile ${CLS2[i]}" id="tile${i}"><span style="font-size:1.4rem">${ICN2[i]}</span><div><div>${a}</div><div class="rbar"><div class="rfill" id="bar${i}" style="width:0%"></div></div><div class="cnt" id="cnt${i}">0</div></div></div>`).join('');}
       showSec('sQuestion');
+      if(ph==='locked'){
+        const bl=document.getElementById('btn-lock'),br=document.getElementById('btn-reveal');
+        if(bl)bl.style.display='none';
+        if(br)br.style.display='inline-flex';
+      } else if(d.startedAt){
+        startTimer(d.startedAt);
+      }
       updateABar();
       if(unsubA)unsubA();
       unsubA=onValue(ref(db,'sessions/'+sv.code+'/answers'),snap3=>{answers_q=snap3.val()||{};updateABar();if(q.type==='open')renderOpenAnswers();});
@@ -550,7 +559,8 @@ window.startQuiz=function(){qIdx=-1;nextQ();};
 window.nextQ=async function(){
   qIdx++;if(qIdx>=qs.length){showFinal();return;}
   const q=qs[qIdx];answers_q={};tLeft=q.time;
-  await update(sRef,{phase:'question',qIndex:qIdx,answers:null,correct:null});
+  const startedAt=Date.now();
+  await update(sRef,{phase:'question',qIndex:qIdx,answers:null,correct:null,startedAt,duration:q.time});
   document.getElementById('qcur').textContent=qIdx+1;
   document.getElementById('qtot').textContent=qs.length;
   document.getElementById('qtxt').textContent=q.text;
@@ -580,7 +590,11 @@ window.nextQ=async function(){
     adsp.innerHTML=`<div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rr);padding:24px;font-size:1.2rem;font-weight:700;line-height:2;text-align:center">${display}</div><div style="color:var(--mu);font-size:.8rem;margin-top:8px;text-align:center">Mots à trouver : ${q.blanks.join(', ')}</div>`;
   }
 
-  showSec('sQuestion');startTimer();
+  // Reset question button states
+  const bl=document.getElementById('btn-lock'),br=document.getElementById('btn-reveal');
+  if(bl){bl.style.display='inline-flex';bl.disabled=false;}
+  if(br){br.style.display='none';}
+  showSec('sQuestion');startTimer(startedAt);
   if(unsubA)unsubA();
   unsubA=onValue(ref(db,'sessions/'+window._sCode+'/answers'),snap=>{
     answers_q=snap.val()||{};
@@ -589,10 +603,23 @@ window.nextQ=async function(){
   });
 };
 
-function startTimer(){
-  clearInterval(timerIv);const q=qs[qIdx],tot=q.time,C=201;
-  upTUI();
-  timerIv=setInterval(()=>{tLeft--;upTUI();if(tLeft<=0){clearInterval(timerIv);update(sRef,{phase:'timeout'});revealAnswer();}},1000);
+function startTimer(startedAt){
+  clearInterval(timerIv);
+  const q=qs[qIdx],tot=q.time,C=201;
+  // Use server startedAt so reload resyncs perfectly
+  const deadline=startedAt+tot*1000;
+  function tick(){
+    const now=Date.now();
+    tLeft=Math.max(0,Math.round((deadline-now)/1000));
+    upTUI();
+    if(tLeft<=0){
+      clearInterval(timerIv);
+      // Only the host triggers timeout to avoid race conditions
+      update(sRef,{phase:'timeout'}).then(()=>revealAnswer());
+    }
+  }
+  tick();
+  timerIv=setInterval(tick,500); // 500ms for precision
   function upTUI(){document.getElementById('tnum').textContent=tLeft;const p=tLeft/tot;document.getElementById('tarc').style.strokeDashoffset=C*(1-p);document.getElementById('tarc').style.stroke=tLeft<=5?'var(--rd)':tLeft<=10?'var(--a2)':'var(--a1)';}
 }
 
@@ -616,8 +643,22 @@ function renderOpenAnswers(){
   el.innerHTML=entries.map(([name,data])=>`<div class="open-ans-item"><div><div class="open-ans-name">${players[name]?.icon||'🎯'} ${name}</div><div class="open-ans-text">${data.answer||''}</div></div></div>`).join('');
 }
 
+// ── LOCK (new step between question and reveal) ──
+window.lockAnswers=async function(){
+  clearInterval(timerIv);
+  // Write locked phase — students can no longer change answers
+  await update(sRef,{phase:'locked'});
+  // Update button UI
+  document.getElementById('btn-lock').style.display='none';
+  document.getElementById('btn-reveal').style.display='inline-flex';
+  toast('🔒 Réponses verrouillées !');
+};
+
 window.revealAnswer=async function(){
-  clearInterval(timerIv);const q=qs[qIdx];
+  clearInterval(timerIv);
+  // Make sure we're locked first
+  if(sRef)(await update(sRef,{phase:'locked'}));
+  const q=qs[qIdx];
   const upd={};
   // Score by type
   Object.entries(answers_q).forEach(([name,data])=>{
@@ -708,7 +749,7 @@ window.showLeaderboard=async function(isFinal){
   document.getElementById(pId).innerHTML=ord.filter(i=>i<top3.length).map(i=>{const[n,p]=top3[i];return`<div class="pi"><div class="pnm">${p.icon||'🎯'} ${n}</div><div class="psc">${(p.score||0).toLocaleString()}</div><div class="pst ${szC[i]}"><div class="pm">${medals[i]}</div></div></div>`;}).join('');
   const lId=isFinal?'fList':'lbList';
   document.getElementById(lId).innerHTML=sorted.slice(0,30).map(([n,p],i)=>`<div class="lr"><div class="lrk">${i+1}</div><div>${p.icon||'🎯'}</div><div class="lrn">${n}</div><div class="lrd">${(p.lastPoints||0)>0?'+'+(p.lastPoints).toLocaleString():''}</div><div class="lrs">${(p.score||0).toLocaleString()}</div></div>`).join('');
-  if(!isFinal){const isL=qIdx>=qs.length-1;const btn=document.getElementById('lbNext');btn.textContent=isL?'🎉 Terminer':'▶ Question '+(qIdx+2);btn.onclick=isL?showFinal:nextQ;showSec('sLeaderboard');}
+  if(!isFinal){const isL=qIdx>=qs.length-1;const btn=document.getElementById('lbNext');btn.textContent=isL?'🎉 Terminer le quiz':'▶ Question '+(qIdx+2);btn.onclick=isL?showFinal:window.nextQ;showSec('sLeaderboard');}
   else{showSec('sFinal');confetti();}
 };
 function showFinal(){sessionStorage.removeItem('qm_host_session');window.showLeaderboard(true);}
